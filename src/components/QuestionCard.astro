@@ -1,0 +1,36 @@
+---
+// TODO: Quiz engine - implement question rendering, answer validation, score calculation
+interface Props {
+  question?: string;
+  options?: string[];
+  questionIndex?: number;
+  totalQuestions?: number;
+}
+
+const {
+  question = 'Pregunta de ejemplo (placeholder)',
+  options = ['Opción A', 'Opción B', 'Opción C', 'Opción D'],
+  questionIndex = 1,
+  totalQuestions = 10,
+} = Astro.props;
+---
+
+<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+  <div class="text-sm text-slate-500 mb-4">
+    Pregunta {questionIndex} de {totalQuestions}
+  </div>
+  <p class="text-lg font-medium text-slate-900 mb-6">{question}</p>
+  <ul class="space-y-3">
+    {options.map((opt, i) => (
+      <li>
+        <label class="flex items-center gap-3 p-4 rounded-lg border border-slate-200 hover:border-teal-300 cursor-pointer transition-colors">
+          <input type="radio" name="answer" value={i} class="text-teal-600" />
+          <span class="text-slate-700">{opt}</span>
+        </label>
+      </li>
+    ))}
+  </ul>
+  <p class="text-xs text-slate-400 mt-4 italic">
+    [Placeholder: la lógica del quiz se implementará posteriormente]
+  </p>
+</div>

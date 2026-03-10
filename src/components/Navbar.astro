@@ -1,0 +1,54 @@
+---
+// TODO: Supabase auth - show user menu when logged in, hide login/register links
+const currentPath = Astro.url.pathname;
+const isActive = (path: string) => currentPath === path;
+const navLinks = [
+  { href: '/', label: 'Inicio' },
+  { href: '/pricing', label: 'Precios' },
+  { href: '/leaderboard', label: 'Clasificación' },
+];
+---
+
+<nav class="bg-white border-b border-slate-200">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="text-xl font-bold text-teal-600 hover:text-teal-700">
+        Dentiva
+      </a>
+      <div class="flex items-center gap-6">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class={`text-sm font-medium transition-colors ${
+              isActive(link.href)
+                ? 'text-teal-600'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            {link.label}
+          </a>
+        ))}
+        <div class="flex items-center gap-3 border-l border-slate-200 pl-6">
+          <a
+            href="/login"
+            class="text-sm font-medium text-slate-600 hover:text-slate-900"
+          >
+            Iniciar sesión
+          </a>
+          <a
+            href="/register"
+            class="text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors"
+          >
+            Registrarse
+          </a>
+          <a
+            href="/dashboard"
+            class="text-sm font-medium text-slate-600 hover:text-slate-900"
+          >
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

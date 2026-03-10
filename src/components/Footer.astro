@@ -1,0 +1,23 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-slate-100 border-t border-slate-200 py-12 px-4">
+  <div class="container mx-auto max-w-6xl">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+      <a href="/" class="text-lg font-bold text-teal-600">
+        Dentiva
+      </a>
+      <div class="flex gap-8 text-sm text-slate-600">
+        <a href="/" class="hover:text-teal-600">Inicio</a>
+        <a href="/pricing" class="hover:text-teal-600">Precios</a>
+        <a href="/leaderboard" class="hover:text-teal-600">Clasificación</a>
+        <a href="/login" class="hover:text-teal-600">Iniciar sesión</a>
+        <a href="/register" class="hover:text-teal-600">Registrarse</a>
+      </div>
+    </div>
+    <div class="mt-8 pt-8 border-t border-slate-200 text-center text-sm text-slate-500">
+      © {currentYear} Dentiva. Plataforma educativa para dentistas.
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,50 @@
+---
+const features = [
+  {
+    title: 'Material de estudio',
+    description: 'Unidades organizadas por temas del examen de homologación en Alemania.',
+    icon: '📚',
+  },
+  {
+    title: 'Quizzes interactivos',
+    description: 'Pon a prueba tus conocimientos con preguntas tipo examen.',
+    icon: '✓',
+  },
+  {
+    title: 'Seguimiento de progreso',
+    description: 'Visualiza tu avance y mantén la constancia.',
+    icon: '📊',
+  },
+  {
+    title: 'Clasificación semanal',
+    description: 'Compite con otros dentistas y motívate a mejorar.',
+    icon: '🏆',
+  },
+];
+---
+
+<section class="py-20 px-4 bg-slate-50">
+  <div class="container mx-auto max-w-6xl">
+    <h2 class="text-3xl font-bold text-slate-900 text-center mb-4">
+      Todo lo que necesitas para aprobar
+    </h2>
+    <p class="text-slate-600 text-center mb-16 max-w-2xl mx-auto">
+      Una plataforma diseñada específicamente para dentistas que buscan validar su título en Alemania.
+    </p>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {features.map((feature) => (
+        <div
+          class="bg-white p-6 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="text-3xl mb-4">{feature.icon}</div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            {feature.title}
+          </h3>
+          <p class="text-slate-600 text-sm">
+            {feature.description}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
