@@ -1,0 +1,30 @@
+---
+interface Props {
+  title?: string;
+}
+
+const { title = 'Dentiva' } = Astro.props;
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900">
+    <div class="w-full max-w-md">
+      <a href="/" class="block text-center text-2xl font-bold text-teal-600 mb-8">
+        Dentiva
+      </a>
+      <main class="bg-white rounded-lg shadow-md p-8 border border-slate-200">
+        <slot />
+      </main>
+      <p class="text-center text-sm text-slate-500 mt-6">
+        <a href="/" class="hover:text-teal-600">← Volver al inicio</a>
+      </p>
+    </div>
+  </body>
+</html>
