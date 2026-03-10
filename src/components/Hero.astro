@@ -1,11 +1,9 @@
 ---
 interface Props {
-  title?: string;
   subtitle?: string;
 }
 
 const {
-  title = 'Valida tu título dental en Alemania',
   subtitle = 'Material de estudio, quizzes interactivos y seguimiento de progreso. Todo lo que necesitas para aprobar el examen de homologación.',
 } = Astro.props;
 ---
@@ -13,7 +11,7 @@ const {
 <section class="py-20 px-4 bg-white">
   <div class="container mx-auto max-w-4xl text-center">
     <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-      {title}
+      Valida tu título dental en Alemania con <span class="text-6xl text-teal-600 mt-8 block">Dentiva<span class="text-slate-600">App</span></span>
     </h1>
     <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
       {subtitle}
