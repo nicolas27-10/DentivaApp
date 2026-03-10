@@ -1,4 +1,4 @@
-# Dentiva
+# DentivaApp
 
 Plataforma educativa SaaS para dentistas que buscan validar su título profesional en Alemania.
 
