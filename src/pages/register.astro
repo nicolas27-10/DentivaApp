@@ -1,0 +1,60 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+// TODO: Supabase auth - handle registration, email confirmation if needed
+// TODO: Stripe - optional flow to select plan after registration
+---
+
+<AuthLayout title="Registrarse - Dentiva">
+  <h1 class="text-2xl font-bold text-slate-900 mb-6">Crear cuenta</h1>
+  <form class="space-y-4" method="post" action="#">
+    <div>
+      <label for="name" class="block text-sm font-medium text-slate-700 mb-1">
+        Nombre
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        placeholder="Tu nombre"
+      />
+    </div>
+    <div>
+      <label for="email" class="block text-sm font-medium text-slate-700 mb-1">
+        Email
+      </label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        placeholder="tu@email.com"
+      />
+    </div>
+    <div>
+      <label for="password" class="block text-sm font-medium text-slate-700 mb-1">
+        Contraseña
+      </label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+        minlength="6"
+        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+        placeholder="Mínimo 6 caracteres"
+      />
+    </div>
+    <button
+      type="submit"
+      class="w-full py-3 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-colors"
+    >
+      Registrarse
+    </button>
+  </form>
+  <p class="mt-4 text-sm text-slate-600">
+    ¿Ya tienes cuenta? <a href="/login" class="text-teal-600 hover:underline">Iniciar sesión</a>
+  </p>
+</AuthLayout>
