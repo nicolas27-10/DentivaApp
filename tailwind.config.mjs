@@ -14,6 +14,9 @@ export default {
         error: '#E84F4F', // Error - Rojo suave
         border: '#C8E8F5', // Bordes - Azul muy claro
       },
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+      },
     },
   },
   plugins: [],
