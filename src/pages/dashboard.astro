@@ -2,67 +2,96 @@
 import DashboardLayout from '../layouts/DashboardLayout.astro';
 import UnitCard from '../components/UnitCard.astro';
 import LeaderboardTable from '../components/LeaderboardTable.astro';
+import { getSession, signOut } from '@/lib/auth';
+import {getModules} from '@/lib/modules';
+
+
+const session = await getSession();
+
+if(!session) {
+  return Astro.redirect('/login')
+}
+
+if (Astro.request.method === "POST") {
+  await signOut();
+  return Astro.redirect("/login");
+}
 
 // TODO: Supabase - fetch user data and progress
 // TODO: Progress tracking - real data from database
-const placeholderUnits = [
-  { id: '1', title: 'Anatomía dental', description: 'Estructuras y nomenclatura', progress: 60, quizCount: 5 },
-  { id: '2', title: 'Odontología preventiva', description: 'Higiene y prevención', progress: 20, quizCount: 3 },
-  { id: '3', title: 'Periodoncia', description: 'Enfermedades periodontales', progress: 0, quizCount: 4 },
-];
+// const placeholderUnits = [
+//   { id: '1', title: 'Anatomía dental', description: 'Estructuras y nomenclatura', progress: 60, quizCount: 5 },
+//   { id: '2', title: 'Odontología preventiva', description: 'Higiene y prevención', progress: 20, quizCount: 3 },
+//   { id: '3', title: 'Periodoncia', description: 'Enfermedades periodontales', progress: 0, quizCount: 4 },
+// ];
 const leaderboardPreview = [
   { rank: 1, username: 'dentista_2024', score: 2450, country: 'España' },
   { rank: 2, username: 'dr_schmidt', score: 2320, country: 'Alemania' },
   { rank: 3, username: 'maria_odont', score: 2180, country: 'Colombia' },
 ];
+
+
+const modules = await getModules();
 ---
 
 <DashboardLayout title="Dashboard - Dentiva">
   <section class="mb-12">
-    <h1 class="text-2xl font-bold text-slate-900 mb-2">Bienvenido de nuevo</h1>
-    <p class="text-slate-600">Aquí tienes tu progreso y las unidades disponibles.</p>
+    <h1 class="text-2xl font-bold text-textMain mb-2">Bienvenido de nuevo</h1>
+    <p class="text-textMain/70">Aquí tienes tu progreso y las unidades disponibles.</p>
   </section>
 
   <section class="mb-12">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Tu progreso</h2>
-    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+    <h2 class="text-lg font-semibold text-textMain mb-4">Tu progreso</h2>
+    <div class="bg-card rounded-lg border border-border p-6 shadow-sm">
       <div class="flex flex-wrap gap-8">
         <div>
-          <p class="text-sm text-slate-500">Puntos totales</p>
-          <p class="text-2xl font-bold text-teal-600">1,250</p>
+          <p class="text-sm text-textMain/60">Puntos totales</p>
+          <p class="text-2xl font-bold text-primary">1,250</p>
         </div>
         <div>
-          <p class="text-sm text-slate-500">Unidades completadas</p>
-          <p class="text-2xl font-bold text-slate-900">2 / 12</p>
+          <p class="text-sm text-textMain/60">Unidades completadas</p>
+          <p class="text-2xl font-bold text-textMain">2 / 12</p>
         </div>
         <div>
-          <p class="text-sm text-slate-500">Quizzes aprobados</p>
-          <p class="text-2xl font-bold text-slate-900">8</p>
+          <p class="text-sm text-textMain/60">Quizzes aprobados</p>
+          <p class="text-2xl font-bold text-textMain">8</p>
         </div>
       </div>
     </div>
   </section>
 
   <section class="mb-12">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Unidades de estudio</h2>
+    <h2 class="text-lg font-semibold text-textMain mb-4">Unidades de estudio</h2>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {placeholderUnits.map((unit) => (
+      {modules.map((module) => (
         <UnitCard
-          id={unit.id}
-          title={unit.title}
-          description={unit.description}
-          progress={unit.progress}
-          quizCount={unit.quizCount}
+          id={module.id}
+          title={module.title}
+          description={module.description}
+          progress= {3}
+          quizCount= {3}
         />
       ))}
     </div>
   </section>
 
-  <section>
+  <section class="mb-12">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-slate-900">Clasificación semanal</h2>
-      <a href="/leaderboard" class="text-sm text-teal-600 hover:underline">Ver clasificación completa →</a>
+      <h2 class="text-lg font-semibold text-textMain">Clasificación semanal</h2>
+      <a href="/leaderboard" class="text-sm text-primary hover:underline">Ver clasificación completa →</a>
     </div>
     <LeaderboardTable entries={leaderboardPreview} />
   </section>
+
+  <section class="mb-12">
+    <div class="flex items-center justify-end">
+      <form method="POST">
+        <button type="submit" class="bg-error rounded-lg px-8 py-4 text-base font-medium text-white hover:bg-error/90 rounded-lg transition-colors">
+          Cerrar sesión
+        </button>
+      </form>
+    </div>
+  </section>
+
+  
 </DashboardLayout>
