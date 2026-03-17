@@ -1,19 +1,29 @@
 ---
 // TODO: Supabase auth - show user menu when logged in, hide login/register links
+import { getSession, signOut } from "../lib/auth";
+
+const session = await getSession();
+const user = session?.user ?? null;
 const currentPath = Astro.url.pathname;
 const isActive = (path: string) => currentPath === path;
 const navLinks = [
   { href: '/', label: 'Inicio' },
   { href: '/pricing', label: 'Precios' },
   { href: '/leaderboard', label: 'Clasificación' },
+  { href: '/dashboard', label: 'Progreso' },
 ];
+
+if (Astro.request.method === "POST") {
+  await signOut();
+  return Astro.redirect("/login");
+}
 ---
 
-<nav class="bg-white border-b border-slate-200">
+<nav class="bg-card border-b border-border">
   <div class="container mx-auto px-4">
     <div class="flex items-center justify-between h-16">
-      <a href="/" class="text-xl font-bold text-teal-600 hover:text-teal-700">
-        Dentiva<span class=" text-slate-600">App</span>
+      <a href="/" class="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer ">
+        <img src="/DentivaLogo.png" alt="Dentiva" class="h-12 rounded-lg " />
       </a>
       <div class="flex items-center gap-6">
         {navLinks.map((link) => (
@@ -21,32 +31,49 @@ const navLinks = [
             href={link.href}
             class={`text-sm font-medium transition-colors ${
               isActive(link.href)
-                ? 'text-teal-600'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-primary'
+                : 'text-textMain/70 hover:text-textMain'
             }`}
           >
             {link.label}
           </a>
         ))}
-        <div class="flex items-center gap-3 border-l border-slate-200 pl-6">
-          <a
-            href="/login"
-            class="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            Iniciar sesión
-          </a>
-          <a
-            href="/register"
-            class="text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors"
-          >
-            Registrarse
-          </a>
-          <a
-            href="/dashboard"
-            class="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            Dashboard
-          </a>
+        <div class="flex items-center gap-3 border-l border-border pl-6">
+          {!user ? (
+            <>
+              <a
+                href="/login"
+                class="text-sm font-medium text-textMain/70 hover:text-textMain"
+              >
+                Iniciar sesión
+              </a>
+        
+              <a
+                href="/register"
+                class="text-sm font-medium text-white bg-accent hover:bg-accent/90 px-4 py-2 rounded-lg transition-colors"
+              >
+                Registrarse
+              </a>
+            </>
+          ) : (
+            <>
+              {/* <a
+                href="/dashboard"
+                class="text-sm font-medium text-textMain/70 hover:text-textMain"
+              >
+                Dashboard
+              </a> */}
+        
+              <form method="POST">
+                <button
+                  type="submit"
+                  class="text-sm font-medium text-white bg-error hover:bg-error/90 px-4 py-2 rounded-lg transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>

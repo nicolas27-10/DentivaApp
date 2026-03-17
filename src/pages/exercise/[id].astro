@@ -1,0 +1,146 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { supabase } from "../../lib/supabaseClient";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+// obtener ejercicio
+const { data: exercise } = await supabase
+    .from("exercises")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+// obtener opciones
+const { data: options } = await supabase
+    .from("exercise_options")
+    .select("*")
+    .eq("exercise_id", id);
+---
+
+<DashboardLayout title="Ejercicio">
+    <h1 class="text-xl font-bold mb-6">
+        {exercise?.question_text}
+    </h1>
+
+    <div id="quiz-form" class="space-y-4">
+        {
+            options?.map((option) => (
+                <label
+                    class="block border border-border p-4 rounded-lg cursor-pointer hover:border-primary"
+                    data-option-id={option.id}
+                >
+                    <input
+                        type="radio"
+                        name="answer"
+                        value={option.id}
+                        class="mr-2"
+                    />
+                    {option.option_text}
+                </label>
+            ))
+        }
+
+        <div class="flex items-center justify-between">
+            <button
+            type="button"
+            id="submit-answer"
+            class="mt-6 bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent/90"
+            >
+            Responder
+            </button>
+            <div id="exercise-navigation" ></div>
+        </div>
+    </div>
+
+</DashboardLayout>
+
+<script>
+
+    const button = document.getElementById("submit-answer");
+    
+    button?.addEventListener("click", async () => {
+    
+      const selected = document.querySelector('input[name="answer"]:checked');
+    
+      if (!(selected instanceof HTMLInputElement)) return;
+    
+      const answerId = selected.value;
+    
+      const response = await fetch("/api/check-answer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ answerId })
+      });
+    
+      const data = await response.json();
+    
+      const labels = document.querySelectorAll("#quiz-form label");
+    
+      labels.forEach(label => {
+    
+        const optionId = label.getAttribute("data-option-id");
+    
+        if (optionId == data.correctOptionId) {
+          label.classList.add("border-green-500","bg-green-50");
+        }
+    
+        if (!data.correct && optionId == answerId) {
+          label.classList.add("border-red-500","bg-red-50");
+        }
+    
+      });
+    
+      // bloquear inputs
+      document.querySelectorAll('input[name="answer"]').forEach(input => {
+        if (input instanceof HTMLInputElement) {
+          input.disabled = true;
+        }
+      });
+    
+      // desactivar botón responder
+      if (button instanceof HTMLButtonElement) {
+        button.disabled = true;
+        button.classList.add("opacity-50", "cursor-not-allowed");
+        }
+    
+      const nav = document.getElementById("exercise-navigation");
+    
+      if (!nav) return;
+    
+      // EJEMPLO: si existe siguiente ejercicio
+      const currentExercise = Number(window.location.pathname.split("/").pop());
+      const nextExercise = currentExercise + 1;
+    
+      // si existe siguiente
+      if (nextExercise <= 5) {
+    
+        nav.innerHTML = `
+          <a
+            href="/exercise/${nextExercise}"
+            class="inline-block mt-6 bg-primary text-white px-6 py-3 rounded-lg"
+          >
+            Continuar →
+          </a>
+        `;
+    
+      } else {
+    
+        nav.innerHTML = `
+          <a
+            href="/dashboard"
+            class="inline-block mt-6 bg-green-600 text-white px-6 py-3 rounded-lg"
+          >
+            Finalizar lección
+          </a>
+        `;
+    
+      }
+    
+    });
+    
+    </script>
