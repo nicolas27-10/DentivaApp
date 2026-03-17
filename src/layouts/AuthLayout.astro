@@ -12,18 +12,21 @@ import '../styles/global.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/DentivaLogoSm.png" />
+    <link rel="apple-touch-icon" href="/DentivaLogoSm.png" />
+    <meta name="theme-color" content="#4AAED9" />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900">
+  <body class="min-h-screen flex items-center justify-center bg-background text-textMain">
     <div class="w-full max-w-md">
-      <a href="/" class="block text-center text-2xl font-bold text-teal-600 mb-8">
+      <a href="/" class="block text-center text-2xl font-bold text-primary mb-8">
         Dentiva
       </a>
-      <main class="bg-white rounded-lg shadow-md p-8 border border-slate-200">
+      <main class="bg-card rounded-lg shadow-md p-8 border border-border">
         <slot />
       </main>
-      <p class="text-center text-sm text-slate-500 mt-6">
-        <a href="/" class="hover:text-teal-600">← Volver al inicio</a>
+      <p class="text-center text-sm text-textMain/70 mt-6">
+        <a href="/" class="hover:text-primary">← Volver al inicio</a>
       </p>
     </div>
   </body>

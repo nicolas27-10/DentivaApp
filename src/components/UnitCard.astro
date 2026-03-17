@@ -12,28 +12,28 @@ const { id, title, description = '', progress = 0, quizCount = 0 } = Astro.props
 
 <a
   href={`/unit/${id}`}
-  class="block p-6 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md hover:border-teal-200 transition-all"
+  class="block p-6 bg-card rounded-lg border border-border shadow-sm hover:shadow-md hover:border-primary transition-all"
 >
   <div class="flex items-start justify-between">
     <div>
-      <h3 class="text-lg font-semibold text-slate-900">{title}</h3>
+      <h3 class="text-lg font-semibold text-textMain">{title}</h3>
       {description && (
-        <p class="text-slate-600 text-sm mt-1 line-clamp-2">{description}</p>
+        <p class="text-textMain/70 text-sm mt-1 line-clamp-2">{description}</p>
       )}
       {quizCount > 0 && (
-        <p class="text-xs text-slate-500 mt-2">{quizCount} quiz(zes)</p>
+        <p class="text-xs text-textMain/60 mt-2">{quizCount} quiz(zes)</p>
       )}
     </div>
   </div>
   {progress > 0 && (
     <div class="mt-4">
-      <div class="flex justify-between text-xs text-slate-500 mb-1">
+      <div class="flex justify-between text-xs text-textMain/60 mb-1">
         <span>Progreso</span>
         <span>{progress}%</span>
       </div>
-      <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+      <div class="h-2 bg-border rounded-full overflow-hidden">
         <div
-          class="h-full bg-teal-600 rounded-full transition-all"
+          class="h-full bg-primary rounded-full transition-all"
           style={`width: ${progress}%`}
         />
       </div>

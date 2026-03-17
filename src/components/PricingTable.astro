@@ -20,37 +20,37 @@ const plans = [
 ];
 ---
 
-<section class="py-20 px-4 bg-white">
+<section class="py-20 px-4 bg-background">
   <div class="container mx-auto max-w-5xl">
-    <h2 class="text-3xl font-bold text-slate-900 text-center mb-4">
+    <h2 class="text-3xl font-bold text-textMain text-center mb-4">
       Planes simples y transparentes
     </h2>
-    <p class="text-slate-600 text-center mb-12">
+    <p class="text-textMain/70 text-center mb-12">
       Elige el plan que mejor se adapte a tus objetivos.
     </p>
     <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
       {plans.map((plan) => (
         <div
           class={`relative rounded-lg border p-8 ${
-            plan.highlight
-              ? 'border-teal-500 bg-teal-50 shadow-lg'
-              : 'border-slate-200 bg-white'
+            plan.highlight ? 'border-accent bg-card shadow-lg' : 'border-border bg-card'
           }`}
         >
           {plan.highlight && (
-            <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+            <span
+              class="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs font-medium px-3 py-1 rounded-full"
+            >
               Recomendado
             </span>
           )}
-          <h3 class="text-xl font-semibold text-slate-900 mb-2">{plan.name}</h3>
+          <h3 class="text-xl font-semibold text-textMain mb-2">{plan.name}</h3>
           <div class="mb-6">
-            <span class="text-4xl font-bold text-slate-900">€{plan.price}</span>
-            <span class="text-slate-600">/{plan.period}</span>
+            <span class="text-4xl font-bold text-textMain">€{plan.price}</span>
+            <span class="text-textMain/70">/{plan.period}</span>
           </div>
           <ul class="space-y-3 mb-8">
             {plan.features.map((f) => (
-              <li class="flex items-center gap-2 text-slate-700">
-                <span class="text-teal-600">✓</span>
+              <li class="flex items-center gap-2 text-textMain/80">
+                <span class="text-success">✓</span>
                 {f}
               </li>
             ))}
@@ -59,8 +59,8 @@ const plans = [
             href="/register"
             class={`block w-full text-center py-3 px-4 rounded-lg font-medium transition-colors ${
               plan.highlight
-                ? 'bg-teal-600 text-white hover:bg-teal-700'
-                : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                ? 'bg-accent text-white hover:bg-accent/90'
+                : 'bg-card text-textMain hover:bg-background'
             }`}
           >
             {plan.cta}

@@ -15,22 +15,24 @@ const {
 } = Astro.props;
 ---
 
-<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-  <div class="text-sm text-slate-500 mb-4">
+<div class="bg-card rounded-lg border border-border p-6 shadow-sm">
+  <div class="text-sm text-textMain/60 mb-4">
     Pregunta {questionIndex} de {totalQuestions}
   </div>
-  <p class="text-lg font-medium text-slate-900 mb-6">{question}</p>
+  <p class="text-lg font-medium text-textMain mb-6">{question}</p>
   <ul class="space-y-3">
     {options.map((opt, i) => (
       <li>
-        <label class="flex items-center gap-3 p-4 rounded-lg border border-slate-200 hover:border-teal-300 cursor-pointer transition-colors">
-          <input type="radio" name="answer" value={i} class="text-teal-600" />
-          <span class="text-slate-700">{opt}</span>
+        <label
+          class="flex items-center gap-3 p-4 rounded-lg border border-border hover:border-primary cursor-pointer transition-colors"
+        >
+          <input type="radio" name="answer" value={i} class="text-primary" />
+          <span class="text-textMain/80">{opt}</span>
         </label>
       </li>
     ))}
   </ul>
-  <p class="text-xs text-slate-400 mt-4 italic">
+  <p class="text-xs text-textMain/50 mt-4 italic">
     [Placeholder: la lógica del quiz se implementará posteriormente]
   </p>
 </div>
