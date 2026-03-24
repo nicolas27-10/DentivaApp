@@ -10,3 +10,5 @@ export default defineConfig({
   output: 'server',
   adapter: netlify(),
 });
+
+// Prueba de adaptador de Netlify
