@@ -1,0 +1,142 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { supabase } from "../../lib/supabaseClient";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+// 1. Obtener usuario actual
+const { data: { session } } = await supabase.auth.getSession();
+const userId = session?.user?.id;
+
+// 2. Obtener la información del Módulo
+const { data: moduleData } = await supabase
+  .from("modules")
+  .select("*")
+  .eq("id", id)
+  .single();
+
+// 3. Obtener TODAS las lecciones de este módulo
+const { data: lessons } = await supabase
+  .from("lessons")
+  .select("*")
+  .eq("module_id", id)
+  .order("order_index", { ascending: true });
+
+if (!moduleData) {
+  return Astro.redirect('/dashboard');
+}
+
+// --- NUEVA LÓGICA DE PROGRESO ---
+const lessonIds = lessons?.map(l => l.id) || [];
+
+// 4. Obtener todos los ejercicios de estas lecciones
+const { data: allExercises } = await supabase
+  .from("exercises")
+  .select("id, lesson_id")
+  .in("lesson_id", lessonIds);
+
+// 5. Obtener los intentos del usuario
+const exerciseIds = allExercises?.map(e => e.id) || [];
+let attemptedExerciseIds = new Set();
+
+if (userId && exerciseIds.length > 0) {
+  const { data: attempts } = await supabase
+    .from("user_attempts")
+    .select("exercise_id")
+    .eq("user_id", userId)
+    .in("exercise_id", exerciseIds);
+  
+  attemptedExerciseIds = new Set(attempts?.map(a => a.exercise_id));
+}
+
+// 6. Combinar datos: Calcular progreso por cada lección
+const lessonsWithProgress = lessons?.map(lesson => {
+  const lessonExercises = allExercises?.filter(e => e.lesson_id === lesson.id) || [];
+  const total = lessonExercises.length;
+  const completed = lessonExercises.filter(e => attemptedExerciseIds.has(e.id)).length;
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  
+  return { ...lesson, total, completed, percentage };
+}) || [];
+---
+
+<DashboardLayout title={`Módulo: ${moduleData.title}`}>
+  
+  <div class="mb-6">
+    <a href="/dashboard" class="text-primary hover:underline text-sm font-medium">
+      &larr; Volver al dashboard
+    </a>
+  </div>
+
+  <div class="bg-card p-8 rounded-2xl border border-border shadow-sm mb-8">
+    <h1 class="text-3xl font-bold mb-2 text-textMain">Unidad {moduleData.order_index}: {moduleData.title}</h1>
+    <p class="text-textMain/70 text-lg">{moduleData.description}</p>
+  </div>
+
+  <div class="mb-10 p-6 border-2 border-dashed border-border rounded-xl bg-blue-50/30">
+    <h3 class="font-bold text-blue-900 mb-2">📚 Material de estudio del módulo</h3>
+    <p class="text-sm text-blue-800/70 italic">
+      [Placeholder: Aquí integraremos los PDFs o documentos teóricos descargables usando Supabase Storage más adelante.]
+    </p>
+  </div>
+
+  <h2 class="text-2xl font-bold mb-6 text-textMain">Lecciones de esta unidad</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {lessonsWithProgress.map((lesson) => (
+      <a 
+        href={`/lesson/${lesson.id}`}
+        class="flex flex-col h-full bg-card border border-border rounded-xl p-6 hover:border-primary hover:shadow-md transition-all group relative overflow-hidden"
+      >
+        {lesson.percentage === 100 && (
+          <div class="absolute inset-0 bg-green-50/30 pointer-events-none"></div>
+        )}
+
+        <div class="flex-grow relative z-10">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-primary uppercase tracking-wider block">
+              Lección {moduleData.order_index}.{lesson.order_index}
+            </span>
+            {lesson.percentage === 100 && (
+              <span class="text-green-500" title="Completada">✅</span>
+            )}
+          </div>
+          
+          <h3 class="text-lg font-bold text-textMain mb-3 group-hover:text-primary transition-colors">
+            {lesson.title}
+          </h3>
+          <p class="text-sm text-textMain/70 line-clamp-2 mb-4">
+            {lesson.content}
+          </p>
+
+          <div class="mt-auto">
+            <div class="flex justify-between text-xs font-medium text-textMain/60 mb-1">
+              <span>Progreso</span>
+              <span>{lesson.percentage}%</span>
+            </div>
+            <div class="h-1.5 w-full bg-border rounded-full overflow-hidden">
+              <div 
+                class={`h-full transition-all duration-500 ${lesson.percentage === 100 ? 'bg-green-500' : 'bg-primary'}`}
+                style={`width: ${lesson.percentage}%`}
+              ></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm font-medium text-primary relative z-10">
+          <span>{lesson.percentage === 100 ? 'Repasar lección' : lesson.percentage > 0 ? 'Continuar lección' : 'Entrar a la lección'}</span>
+          <span class="transform group-hover:translate-x-1 transition-transform">→</span>
+        </div>
+      </a>
+    ))}
+  </div>
+
+  {lessonsWithProgress.length === 0 && (
+    <div class="text-center p-8 border border-border rounded-xl bg-card">
+      <p class="text-textMain/60">Aún no hay lecciones creadas para este módulo.</p>
+    </div>
+  )}
+
+</DashboardLayout>

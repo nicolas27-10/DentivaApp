@@ -4,40 +4,118 @@ import { supabase } from "../../lib/supabaseClient";
 
 const { id } = Astro.params;
 
+// 1. (SIMULADO) Obtener el usuario actual. 
+// Ajusta esto a tu método de autenticación (cookies, Astro.locals, etc.)
+const { data: { session } } = await supabase.auth.getSession();
+const userId = session?.user?.id;
+
+// 2. Obtener la lección
 const { data: lesson } = await supabase
   .from("lessons")
   .select("*")
   .eq("id", id)
   .single();
 
+// 3. Obtener los ejercicios ordenados
 const { data: exercises } = await supabase
   .from("exercises")
   .select("*")
   .eq("lesson_id", id)
   .order("order_index");
+
+// 4. Obtener los intentos del usuario para saber qué completó
+const { data: attempts } = await supabase
+  .from("user_attempts")
+  .select("exercise_id")
+  .eq("user_id", userId)
+  .in("exercise_id", exercises?.map(e => e.id) || []);
+
+// 5. Cruzar datos: ¿Cuáles están completados?
+const attemptedExerciseIds = new Set(attempts?.map(a => a.exercise_id));
+
+const exercisesWithStatus = exercises?.map(exercise => ({
+  ...exercise,
+  isCompleted: attemptedExerciseIds.has(exercise.id)
+})) || [];
+
+// 6. Calcular progreso para la UI
+const totalExercises = exercisesWithStatus.length;
+const completedCount = exercisesWithStatus.filter(e => e.isCompleted).length;
+const progressPercentage = totalExercises > 0 ? Math.round((completedCount / totalExercises) * 100) : 0;
+
+// 7. Encontrar el siguiente ejercicio para el botón "Continuar"
+const firstPendingExercise = exercisesWithStatus.find(e => !e.isCompleted) || exercisesWithStatus[0];
+
 ---
 
 <DashboardLayout title={lesson.title}>
+  <div class="max-w-3xl mx-auto">
 
-<h1 class="text-2xl font-bold mb-4">{lesson.title}</h1>
+    <div class="mb-6">
+      <a href={`/module/${lesson.module_id}`} class="text-primary hover:underline text-sm font-medium">
+        &larr; Volver al modulo
+      </a>
+    </div>
+    
+    <div class="mb-8 bg-card p-6 rounded-2xl border border-border shadow-sm">
+      <h1 class="text-2xl font-bold mb-4">{lesson.title}</h1>
+      
+      <div class="prose prose-sm text-textMain/80 mb-6">
+        <p>{lesson.content}</p>
+      </div>
 
-<p class="mb-8 text-textMain/80">
-  {lesson.content}
-</p>
+      <div class="mt-4">
+        <div class="flex justify-between text-sm font-medium mb-2">
+          <span>Progreso de la lección</span>
+          <span>{progressPercentage}% ({completedCount}/{totalExercises})</span>
+        </div>
+        <div class="h-3 w-full bg-border rounded-full overflow-hidden">
+          <div 
+            class="h-full bg-primary transition-all duration-500" 
+            style={`width: ${progressPercentage}%`}
+          ></div>
+        </div>
+      </div>
 
-<h2 class="text-lg font-semibold mb-4">Ejercicios</h2>
+      <div class="mt-6 flex justify-end">
+        <a 
+          href={`/exercise/${firstPendingExercise?.id}`}
+          class="bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primary/90 transition-transform hover:-translate-y-1 shadow-primary"
+        >
+          {completedCount === 0 ? "Empezar Ejercicios" : completedCount === totalExercises ? "Repasar Ejercicios" : "Continuar Estudio"}
+        </a>
+      </div>
+    </div>
 
-<div class="space-y-4">
+    <h2 class="text-lg font-semibold mb-4 text-textMain">Índice de ejercicios</h2>
+    
+    <div class="space-y-3">
+      {exercisesWithStatus.map((exercise) => (
+        <a
+          href={`/exercise/${exercise.id}`}
+          class={`flex items-center justify-between border p-4 rounded-xl transition-all ${
+            exercise.isCompleted 
+              ? "border-green-500/50 bg-green-50/10 hover:border-green-500" 
+              : "border-border bg-card hover:border-primary"
+          }`}
+        >
+          <div class="flex items-center gap-3">
+            {exercise.isCompleted ? (
+              <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            ) : (
+              <div class="w-6 h-6 rounded-full border-2 border-border"></div>
+            )}
+            <span class={`font-medium ${exercise.isCompleted ? "text-textMain/70" : "text-textMain"}`}>
+              Ejercicio {exercise.order_index}
+            </span>
+          </div>
+          
+          <span class="text-xs text-textMain/50 bg-border px-2 py-1 rounded-md uppercase font-semibold">
+            {exercise.type === 'multiple_choice' ? 'Test' : 'Flashcard'}
+          </span>
+        </a>
+      ))}
+    </div>
 
-{exercises?.map((exercise) => (
-<a
-href={`/exercise/${exercise.id}`}
-class="block border border-border rounded-lg p-4 hover:border-primary"
->
-Ejercicio {exercise.order_index}
-</a>
-))}
-
-</div>
-
+  </div>
 </DashboardLayout>
