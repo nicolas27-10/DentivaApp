@@ -1,0 +1,137 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { supabase } from "../../lib/supabaseClient";
+
+export const prerender = false;
+
+const { moduleId } = Astro.params;
+
+// 1. Obtener los ejercicios que SON assessment para este módulo
+const { data: exercises } = await supabase
+  .from("exercises")
+  .select(`
+    id, 
+    question_text,
+    exercise_options ( id, option_text )
+  `)
+  .eq("lesson_id", moduleId) // Ojo: Ajusta esto si tus exercises se unen al módulo de otra forma
+  .eq("is_assessment", true);
+
+if (!exercises || exercises.length === 0) {
+  return Astro.redirect('/dashboard'); // Si no hay examen, lo sacamos
+}
+---
+
+<DashboardLayout title="Assessment del Módulo">
+  <h1 class="text-2xl font-bold mb-6">Prueba de la Unidad</h1>
+  <p class="mb-6 text-textMain/70">Responde todas las preguntas para desbloquear la siguiente unidad.</p>
+
+  <form id="assessment-form" class="space-y-8" data-module-id={moduleId}>
+    
+    {exercises.map((exercise, index) => (
+      <div class="p-6 bg-card rounded-xl border border-border">
+        <h2 class="text-lg font-semibold mb-4">
+          {index + 1}. {exercise.question_text}
+        </h2>
+        
+        <div class="space-y-3">
+          {exercise.exercise_options.map((option) => (
+            <label class="flex items-center p-3 border border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
+              <input
+                type="radio"
+                name={`question-${exercise.id}`}
+                value={option.id}
+                class="mr-3"
+                required 
+              />
+              {option.option_text}
+            </label>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    <div class="mt-8 border-t border-border pt-6">
+      <button
+        type="submit"
+        id="submit-assessment-btn"
+        class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:bg-primary/90 transition-colors"
+      >
+        Enviar Examen
+      </button>
+    </div>
+
+    <div id="result-message" class="hidden mt-6 p-4 rounded-lg text-center font-bold"></div>
+  </form>
+</DashboardLayout>
+
+<script>
+  const form = document.getElementById('assessment-form');
+  const submitBtn = document.getElementById('submit-assessment-btn');
+  const resultDiv = document.getElementById('result-message');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita recargar la página
+    
+    if (
+      !(submitBtn instanceof HTMLButtonElement) || 
+      !(form instanceof HTMLFormElement) || 
+      !(resultDiv instanceof HTMLDivElement)
+    ) {
+      console.error("Faltan elementos en el DOM");
+      return; 
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Evaluando...";
+
+    // 1. Recolectar respuestas del form
+    const formData = new FormData(form);
+    const answers = [];
+    
+    for (const [name, value] of formData.entries()) {
+      // Extraemos el exerciseId del nombre del input (ej: "question-15" -> "15")
+      const exerciseId = parseInt(name.replace('question-', ''));
+      answers.push({ exerciseId, optionId: parseInt(value as string) });
+    }
+
+    const moduleId = form.dataset.moduleId;
+
+    // Aquí deberías obtener el userId de tu contexto de sesión.
+    // Para este ejemplo asumiré que lo tienes disponible o que la API usa cookies.
+    // idealmente la API debería leer la cookie de sesión en lugar de que el frontend mande el userId.
+
+    try {
+      // 2. Enviar a nuestra API unificada
+      const response = await fetch('/api/submit-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId, answers }) 
+      });
+
+      const result = await response.json();
+
+      // 3. Mostrar resultado y guardar progreso
+      resultDiv.classList.remove('hidden');
+      
+      if (result.passed) {
+        resultDiv.classList.add('bg-green-100', 'text-green-800');
+        resultDiv.innerHTML = `¡Felicidades! Aprobaste con un ${result.score}%. Redirigiendo...`;
+        
+        // Redirigir al dashboard tras 2 segundos para que vean el módulo desbloqueado
+        setTimeout(() => window.location.href = '/dashboard', 2000);
+      } else {
+        resultDiv.classList.add('bg-red-100', 'text-red-800');
+        resultDiv.innerHTML = `Obtuviste un ${result.score}%. Necesitas 70% para aprobar. ¡Inténtalo de nuevo!`;
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Reintentar Examen";
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Hubo un error al procesar el examen.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar Examen";
+    }
+  });
+</script>

@@ -3,58 +3,127 @@ import DashboardLayout from '../layouts/DashboardLayout.astro';
 import UnitCard from '../components/UnitCard.astro';
 import LeaderboardTable from '../components/LeaderboardTable.astro';
 import { getSession, signOut } from '@/lib/auth';
-import {getModules} from '@/lib/modules';
+import { getModulesWithProgress } from '@/lib/modules';
+import { supabase } from '@/lib/supabaseClient';
 
+// 1. Obtener usuario actual
+const { data: { session } } = await supabase.auth.getSession();
+const user = session?.user;
 
-const session = await getSession();
-
-if(!session) {
-  return Astro.redirect('/login')
+// 🛑 GUARDIA DE SEGURIDAD: Si no hay usuario, lo mandamos al login
+if (!user) {
+  return Astro.redirect('/login');
 }
 
-if (Astro.request.method === "POST") {
-  await signOut();
-  return Astro.redirect("/login");
+// Como ya pasamos el guardia, sabemos que 'user' existe seguro
+const userId = user.id;
+
+// Extraer el nombre para el saludo (buscando en la metadata del form de registro)
+const rawName = user.user_metadata?.display_name 
+  || user.user_metadata?.displayName 
+  || user.user_metadata?.full_name 
+  || user.user_metadata?.name 
+  || user.email?.split('@')[0] 
+  || 'Estudiante';
+
+// Tomamos solo el primer nombre para no romper el diseño
+const firstName = rawName.trim().split(' ')[0];
+
+// 2. Llamamos a tu función de módulos
+const modules = await getModulesWithProgress(userId);
+
+// 3. Calcular el progreso real de "APRENDER" (Ejercicios totales vs intentados)
+const { count: totalExercises } = await supabase
+  .from("exercises")
+  .select("*", { count: "exact", head: true });
+
+let completedExercisesCount = 0;
+if (user) {
+  const { data: attempts } = await supabase
+    .from("user_attempts")
+    .select("exercise_id")
+    .eq("user_id", user.id);
+  
+  const uniqueAttempts = new Set(attempts?.map(a => a.exercise_id));
+  completedExercisesCount = uniqueAttempts.size;
 }
 
-// TODO: Supabase - fetch user data and progress
-// TODO: Progress tracking - real data from database
-// const placeholderUnits = [
-//   { id: '1', title: 'Anatomía dental', description: 'Estructuras y nomenclatura', progress: 60, quizCount: 5 },
-//   { id: '2', title: 'Odontología preventiva', description: 'Higiene y prevención', progress: 20, quizCount: 3 },
-//   { id: '3', title: 'Periodoncia', description: 'Enfermedades periodontales', progress: 0, quizCount: 4 },
-// ];
+const aprenderPercentage = totalExercises ? Math.round((completedExercisesCount / totalExercises) * 100) : 0;
+
+// 4. PLACEHOLDERS para las métricas del Mockup (se conectarán después)
+const fspPercentage = 0; // Se conectará al Simulador FSP
+const wordsLearned = 0;  // Se conectará a la tabla Glossary
+const badgesCount = 0;   // Se conectará al sistema de logros
+const studyHours = 0;    // Se conectará a la tabla de sesiones
+
+// 5. Mock de Leaderboard (lo mantenemos igual)
 const leaderboardPreview = [
   { rank: 1, username: 'dentista_2024', score: 2450, country: 'España' },
   { rank: 2, username: 'dr_schmidt', score: 2320, country: 'Alemania' },
   { rank: 3, username: 'maria_odont', score: 2180, country: 'Colombia' },
 ];
-
-
-const modules = await getModules();
 ---
 
 <DashboardLayout title="Dashboard - Dentiva">
+  
   <section class="mb-12">
-    <h1 class="text-2xl font-bold text-textMain mb-2">Bienvenido de nuevo</h1>
-    <p class="text-textMain/70">Aquí tienes tu progreso y las unidades disponibles.</p>
-  </section>
+    <div class="bg-card border border-border rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 justify-between items-center shadow-sm">
+      
+      <div class="w-full lg:w-1/4 text-center lg:text-left min-w-0">
+        <h1 class="text-3xl font-extrabold text-textMain mb-1 truncate" title={`Hallo, ${firstName}`}>
+          Hallo, <span class="capitalize">{firstName}</span>
+        </h1>
+        <p class="text-textMain/60 text-sm font-medium truncate" title="Weiter so — die FSP rückt immer näher">
+          Weiter so — die FSP rückt immer näher
+        </p>
+      </div>
 
-  <section class="mb-12">
-    <h2 class="text-lg font-semibold text-textMain mb-4">Tu progreso</h2>
-    <div class="bg-card rounded-xl border border-border p-6 shadow-sm">
-      <div class="flex flex-wrap gap-8">
+      <div class="w-full lg:w-2/5 space-y-5">
         <div>
-          <p class="text-sm text-textMain/60">Puntos totales</p>
-          <p class="text-2xl font-bold text-primary">1,250</p>
+          <div class="flex justify-between text-xs font-bold text-textMain mb-2 tracking-wide">
+            <span class="uppercase flex items-center gap-2">
+              <svg class="w-4 h-4 text-textMain/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              APRENDER
+            </span>
+            <span class="text-[#2B8EB5]">{aprenderPercentage}%</span>
+          </div>
+          <div class="h-3 w-full bg-blue-100 rounded-full overflow-hidden">
+            <div class="h-full bg-[#2B8EB5] transition-all duration-1000 ease-out rounded-full" style={`width: ${aprenderPercentage}%`}></div>
+          </div>
         </div>
+
         <div>
-          <p class="text-sm text-textMain/60">Unidades completadas</p>
-          <p class="text-2xl font-bold text-textMain">2 / 12</p>
+          <div class="flex justify-between text-xs font-bold text-textMain mb-2 tracking-wide">
+            <span class="uppercase flex items-center gap-2">
+              <svg class="w-4 h-4 text-textMain/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+              FSP-VORBEREITUNG
+            </span>
+            <span class="text-[#20B273]">{fspPercentage}%</span>
+          </div>
+          <div class="h-3 w-full bg-green-100 rounded-full overflow-hidden">
+            <div class="h-full bg-[#20B273] transition-all duration-1000 ease-out rounded-full" style={`width: ${fspPercentage}%`}></div>
+          </div>
         </div>
-        <div>
-          <p class="text-sm text-textMain/60">Quizzes aprobados</p>
-          <p class="text-2xl font-bold text-textMain">8</p>
+      </div>
+
+      <div class="w-full lg:w-1/3 flex flex-col gap-3">
+        <div class="flex items-center gap-3 bg-blue-50/50 border border-blue-100 px-4 py-2.5 rounded-xl">
+          <div class="bg-yellow-100 p-1.5 rounded-lg text-yellow-600">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+          </div>
+          <span class="text-sm font-semibold text-textMain">{badgesCount} Abzeichen erhalten</span>
+        </div>
+        <div class="flex items-center gap-3 bg-blue-50/50 border border-blue-100 px-4 py-2.5 rounded-xl">
+          <div class="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+          </div>
+          <span class="text-sm font-semibold text-textMain">{wordsLearned} Wörter gelernt</span>
+        </div>
+        <div class="flex items-center gap-3 bg-blue-50/50 border border-blue-100 px-4 py-2.5 rounded-xl">
+          <div class="bg-green-100 p-1.5 rounded-lg text-green-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <span class="text-sm font-semibold text-textMain">{studyHours} Std. Lernzeit gesamt</span>
         </div>
       </div>
     </div>
@@ -68,8 +137,8 @@ const modules = await getModules();
           id={module.id}
           title={module.title}
           description={module.description}
-          progress= {3}
-          quizCount= {3}
+          progress={module.userProgress?.progress_percentage || 0}
+          isLocked={module.isLocked} 
         />
       ))}
     </div>
@@ -92,6 +161,5 @@ const modules = await getModules();
       </form>
     </div>
   </section>
-
   
 </DashboardLayout>
