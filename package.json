@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@astrojs/netlify": "^7.0.4",
-    "@astrojs/tailwind": "^5.1.0",
+    "@astrojs/tailwind": "^6.0.2",
     "@supabase/supabase-js": "^2.99.2",
     "astro": "^6.0.8",
     "tailwindcss": "^3.4.0"
