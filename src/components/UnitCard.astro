@@ -5,7 +5,8 @@ interface Props {
   description?: string;
   progress?: number;
   quizCount?: number;
-  isLocked?: boolean; // 👈 1. Nueva prop para el estado de bloqueo
+  isLocked?: boolean;
+  lockReason?: 'previous_incomplete' | 'subscription_required' | null; // 👈 Nueva prop
 }
 
 const { 
@@ -14,54 +15,88 @@ const {
   description = '', 
   progress = 0, 
   quizCount = 0, 
-  isLocked = false 
+  isLocked = false,
+  lockReason = null
 } = Astro.props;
 
-// 👈 2. Lógica de clases dinámicas para Tailwind
-const baseClasses = "box-border block p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative";
-const activeClasses = "ring-border border-primary shadow-primary hover:ring-primary hover:-translate-y-1";
-const lockedClasses = "ring-border/50 border-gray-400 opacity-60 grayscale cursor-not-allowed";
+// Lógica de clases dinámicas
+const baseClasses = "box-border block p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative min-h-[160px]";
+const activeClasses = "ring-border border-primary shadow-sm hover:shadow-primary/20 hover:-translate-y-1";
+
+// Diferenciamos el estilo visual del bloqueo
+const isPremiumLock = isLocked && lockReason === 'subscription_required';
+const lockedClasses = isPremiumLock 
+  ? "ring-yellow-200 border-yellow-400 opacity-90 cursor-default" // Estilo Premium
+  : "ring-border/50 border-gray-400 opacity-60 grayscale cursor-not-allowed"; // Estilo Progreso
 
 const cardClasses = `${baseClasses} ${isLocked ? lockedClasses : activeClasses}`;
 ---
 
-<a
-  href={isLocked ? undefined : `/module/${id}`} 
-  class={cardClasses}
-  aria-disabled={isLocked}
->
+<div class={cardClasses}>
+  { !isLocked ? (
+    <a href={`/module/${id}`} class="absolute inset-0 z-10" aria-label={`Ir a ${title}`}></a>
+  ) : null }
+
   <div class="flex items-start justify-between">
-    <div class="pr-8"> <h3 class="text-lg font-semibold text-textMain">{title}</h3>
+    <div class="pr-8"> 
+      <h3 class={`text-lg font-bold ${isPremiumLock ? 'text-yellow-900' : 'text-textMain'}`}>
+        {title}
+      </h3>
+      
       {description && (
         <p class="text-textMain/70 text-sm mt-1 line-clamp-2">{description}</p>
       )}
-      {quizCount > 0 && (
-        <p class="text-xs text-textMain/60 mt-2">{quizCount} quiz(zes)</p>
-      )}
     </div>
 
-    {isLocked && (
-      <div class="absolute top-6 right-6 text-textMain/60">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
+    <div class="absolute top-6 right-6">
+      {isLocked && (
+        isPremiumLock ? (
+          <span class="text-yellow-600">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </span>
+        ) : (
+          <span class="text-textMain/40">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </span>
+        )
+      )}
+    </div>
+  </div>
+
+  <div class="mt-6">
+    {isLocked ? (
+      <div class="flex flex-col gap-2">
+        {lockReason === 'subscription_required' ? (
+          <div class="flex flex-col">
+            <span class="text-[11px] font-bold text-yellow-700 uppercase tracking-wider">Contenido Premium</span>
+            <a href="/pricing" class="relative z-20 text-xs text-blue-600 font-bold hover:underline mt-1">
+              Mejorar plan para desbloquear →
+            </a>
+          </div>
+        ) : (
+          <div class="flex flex-col">
+            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Módulo Bloqueado</span>
+            <span class="text-[10px] text-gray-400">Completa la unidad anterior primero</span>
+          </div>
+        )}
+      </div>
+    ) : (
+      /* Barra de progreso si está desbloqueado */
+      <div>
+        <div class="flex justify-between text-xs font-bold text-textMain/60 mb-1.5">
+          <span>Progreso</span>
+          <span>{progress}%</span>
+        </div>
+        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            class="h-full bg-primary rounded-full transition-all duration-700"
+            style={`width: ${progress}%`}
+          />
+        </div>
       </div>
     )}
   </div>
-
-  {!isLocked && progress > 0 && (
-    <div class="mt-4">
-      <div class="flex justify-between text-xs text-textMain/60 mb-1">
-        <span>Progreso</span>
-        <span>{progress}%</span>
-      </div>
-      <div class="h-2 bg-border rounded-full overflow-hidden">
-        <div
-          class="h-full bg-primary rounded-full transition-all"
-          style={`width: ${progress}%`}
-        />
-      </div>
-    </div>
-  )}
-</a>
+</div>

@@ -129,7 +129,7 @@ const leaderboardPreview = [
     </div>
   </section>
 
-  <section class="mb-12">
+  <section  class="mb-12">
     <h2 class="text-lg font-semibold text-textMain mb-4">Unidades de estudio</h2>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {modules.map((module) => (
@@ -138,7 +138,8 @@ const leaderboardPreview = [
           title={module.title}
           description={module.description}
           progress={module.userProgress?.progress_percentage || 0}
-          isLocked={module.isLocked} 
+          isLocked={module.isLocked}
+          lockReason={module.lockReason}
         />
       ))}
     </div>

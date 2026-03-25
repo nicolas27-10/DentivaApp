@@ -4,7 +4,7 @@ interface Props {
 }
 
 const { title = 'Dashboard - Dentiva' } = Astro.props;
-import Navbar from '../components/Navbar.astro';
+import Appnavbar from '@/components/Appnavbar.astro';
 import '../styles/global.css';
 ---
 
@@ -22,7 +22,7 @@ import '../styles/global.css';
     <title>{title}</title>
   </head>
   <body class="min-h-screen flex flex-col bg-background text-textMain">
-    <Navbar />
+    <Appnavbar/>
     <main class="flex-1 container mx-auto px-4 py-8 max-w-6xl">
       <slot />
     </main>
