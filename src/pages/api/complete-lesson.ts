@@ -7,6 +7,12 @@ const supabaseAdmin = createClient(
   import.meta.env.SUPABASE_SERVICE_ROLE_KEY // 👈 La nueva llave
 );
 
+const SERVICE_ROLE_KEY = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SERVICE_ROLE_KEY) {
+  throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
