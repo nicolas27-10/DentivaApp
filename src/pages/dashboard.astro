@@ -47,7 +47,7 @@ const rawName = user.user_metadata?.display_name
 const firstName = rawName.trim().split(' ')[0];
 
 // 2. Llamamos a tu función de módulos
-const modules = await getModulesWithProgress(userId);
+const modules = await getModulesWithProgress(userId, Astro.cookies);
 
 // 3. Calcular el progreso real de "APRENDER"
 const { count: totalExercises } = await supabase
