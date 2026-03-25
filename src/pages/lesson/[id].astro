@@ -1,12 +1,10 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
-import VerticalQuiz from "../../components/VerticalQuiz"; // 👈 Importamos nuestro nuevo componente
+import VerticalQuiz from "../../components/VerticalQuiz"; 
 import { supabase } from "../../lib/supabaseClient";
+import { getSession } from '@/lib/auth';
 
 const { id } = Astro.params;
-
-// ✅ ESTO AÍSLA CADA SESIÓN PERFECTAMENTE
-import { getSession } from '@/lib/auth';
 
 // 1. Obtener el usuario actual desde nuestra función segura
 const user = await getSession(Astro.cookies);
@@ -18,24 +16,24 @@ if (!user) {
 
 const userId = user.id;
 
-// Si no hay usuario, redirigir al login (buena práctica)
-if (!userId) {
-  return Astro.redirect('/login');
-}
+// 🔑 EXTRAER EL TOKEN PARA LAS CONSULTAS
+const token = Astro.cookies.get('sb-access-token')?.value;
 
-// 2. Obtener la información de la lección
-const { data: lesson } = await supabase
+// 2. Obtener la información de la lección (¡Con Token!)
+const { data: lesson, error: lessonError } = await supabase
   .from("lessons")
   .select("*")
   .eq("id", id)
-  .single();
+  .single()
+  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
 
 if (!lesson) {
+  console.error("Error al cargar la lección:", lessonError);
   return Astro.redirect('/dashboard?error=lesson_not_found');
 }
 
-// 3. LA GRAN MEJORA: Obtener los ejercicios CON sus opciones y respuestas de una sola vez
-const { data: exercises } = await supabase
+// 3. LA GRAN MEJORA: Obtener los ejercicios CON sus opciones (¡Con Token!)
+const { data: exercises, error: exercisesError } = await supabase
   .from("exercises")
   .select(`
     id,
@@ -50,16 +48,15 @@ const { data: exercises } = await supabase
     )
   `)
   .eq("lesson_id", id)
-  .order("order_index");
+  .order("order_index")
+  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
 
-  console.log("--- DEBUG SUPABASE ---");
+console.log("--- DEBUG SUPABASE ---");
 console.log("ID de la lección actual:", id);
-console.log("Error de Supabase:", Error);
-console.log("Ejercicios encontrados:", exercises);
+console.log("Error de Supabase (Lección):", lessonError?.message || "Ninguno");
+console.log("Error de Supabase (Ejercicios):", exercisesError?.message || "Ninguno");
+console.log("Ejercicios encontrados:", exercises?.length || 0);
 console.log("----------------------");
-
-// Como ahora el cliente evalúa, ya no necesitamos calcular el progreso individual de cada pregunta en el servidor
-// Simplemente le pasamos las preguntas al componente de React.
 ---
 
 <DashboardLayout title={lesson.title}>

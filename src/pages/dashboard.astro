@@ -59,7 +59,8 @@ if (user) {
   const { data: attempts } = await supabase
     .from("user_attempts")
     .select("exercise_id")
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .setHeader('Authorization', `Bearer ${accessToken.value}`);
   
   const uniqueAttempts = new Set(attempts?.map(a => a.exercise_id));
   completedExercisesCount = uniqueAttempts.size;
