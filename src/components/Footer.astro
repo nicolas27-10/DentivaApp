@@ -1,23 +1,41 @@
 ---
+import { getSession } from "@/lib/auth";
+
+// Verificamos si hay una sesión activa
+const session = await getSession();
+const user = session?.user ?? null;
+
 const currentYear = new Date().getFullYear();
 ---
 
 <footer class="bg-background border-t border-border py-12 px-4">
   <div class="container mx-auto max-w-6xl">
     <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-      <a href="/" class="flex items-center gap-2 cursor-pointer">
+      
+      <a href="/" class="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity">
         <img src="/DentivaLogo.png" alt="Dentiva" class="h-12 rounded-lg bg-none" />
       </a>
-      <div class="flex gap-8 text-sm text-textMain/70">
-        <a href="/" class="hover:text-primary">Inicio</a>
-        <a href="/pricing" class="hover:text-primary">Precios</a>
-        <a href="/leaderboard" class="hover:text-primary">Clasificación</a>
-        <a href="/login" class="hover:text-primary">Iniciar sesión</a>
-        <a href="/register" class="hover:text-primary">Registrarse</a>
+      
+      <div class="flex flex-wrap justify-center gap-6 md:gap-8 text-sm text-textMain/70 font-medium">
+        <a href="/" class="hover:text-primary transition-colors">Inicio</a>
+        <a href="/pricing" class="hover:text-primary transition-colors">Precios</a>
+        <a href="/leaderboard" class="hover:text-primary transition-colors">Clasificación</a>
+        
+        {/* Lógica condicional: Si NO hay usuario, muestra Login/Registro. Si SÍ hay, muestra Dashboard */}
+        {!user ? (
+          <>
+            <a href="/login" class="hover:text-primary transition-colors">Iniciar sesión</a>
+            <a href="/register" class="hover:text-primary transition-colors">Registrarse</a>
+          </>
+        ) : (
+          <a href="/dashboard" class="hover:text-primary transition-colors">Mi Dashboard</a>
+        )}
       </div>
+
     </div>
+    
     <div class="mt-8 pt-8 border-t border-border text-center text-sm text-textMain/60">
-      © {currentYear} DentivaApp. Plataforma educativa para dentistas.
+      © {currentYear} DentivaApp. Plataforma educativa.
     </div>
   </div>
 </footer>

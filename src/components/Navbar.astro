@@ -1,44 +1,46 @@
 ---
-// TODO: Supabase auth - show user menu when logged in, hide login/register links
-import { getSession, signOut } from "../lib/auth";
+import { getSession } from "@/lib/auth";
 
+// Verificamos si el usuario ya tiene sesión iniciada
 const session = await getSession();
 const user = session?.user ?? null;
+
 const currentPath = Astro.url.pathname;
 const isActive = (path: string) => currentPath === path;
+
+// Enlaces exclusivamente públicos (Landing Page)
 const navLinks = [
   { href: '/', label: 'Inicio' },
   { href: '/pricing', label: 'Precios' },
   { href: '/leaderboard', label: 'Clasificación' },
-  { href: '/dashboard', label: 'Progreso' },
 ];
-
-if (Astro.request.method === "POST") {
-  await signOut();
-  return Astro.redirect("/login");
-}
 ---
 
-<nav class="bg-card border-b border-border">
+<nav class="bg-card border-b border-border sticky top-0 z-50">
   <div class="container mx-auto px-4">
     <div class="flex items-center justify-between h-16">
-      <a href="/" class="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer ">
-        <img src="/DentivaLogo.png" alt="Dentiva" class="h-12 rounded-lg " />
+      
+      <a href="/" class="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
+        <img src="/DentivaLogo.png" alt="Dentiva" class="h-12 rounded-lg" />
       </a>
+      
       <div class="flex items-center gap-6">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class={`text-sm font-medium transition-colors ${
-              isActive(link.href)
-                ? 'text-primary'
-                : 'text-textMain/70 hover:text-textMain'
-            }`}
-          >
-            {link.label}
-          </a>
-        ))}
-        <div class="flex items-center gap-3 border-l border-border pl-6">
+        <div class="hidden sm:flex items-center gap-6">
+          {navLinks.map((link) => (
+            <a
+              href={link.href}
+              class={`text-sm font-medium transition-colors ${
+                isActive(link.href)
+                  ? 'text-primary'
+                  : 'text-textMain/70 hover:text-textMain'
+              }`}
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+        
+        <div class="flex items-center gap-4 sm:border-l sm:border-border sm:pl-6">
           {!user ? (
             <>
               <a
@@ -47,32 +49,21 @@ if (Astro.request.method === "POST") {
               >
                 Iniciar sesión
               </a>
-        
               <a
                 href="/register"
-                class="text-sm font-medium text-white bg-accent hover:bg-accent/90 px-4 py-2 rounded-lg transition-colors"
+                class="text-sm font-medium text-white bg-accent hover:bg-accent/90 px-4 py-2 rounded-lg transition-colors shadow-sm"
               >
                 Registrarse
               </a>
             </>
           ) : (
-            <>
-              {/* <a
-                href="/dashboard"
-                class="text-sm font-medium text-textMain/70 hover:text-textMain"
-              >
-                Dashboard
-              </a> */}
-        
-              <form method="POST">
-                <button
-                  type="submit"
-                  class="text-sm font-medium text-white bg-error hover:bg-error/90 px-4 py-2 rounded-lg transition-colors"
-                >
-                  Cerrar sesión
-                </button>
-              </form>
-            </>
+            <a
+              href="/dashboard"
+              class="text-sm font-medium text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2"
+            >
+              Ir a mi Dashboard
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </a>
           )}
         </div>
       </div>
