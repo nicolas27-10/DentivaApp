@@ -1,8 +1,7 @@
 ---
 import { getSession, signOut } from "@/lib/auth";
 
-const session = await getSession();
-const user = session?.user ?? null;
+const user = await getSession(Astro.cookies);
 const currentPath = Astro.url.pathname;
 
 // Función para saber si estamos en la ruta
@@ -33,7 +32,7 @@ const navLinks = [
 ];
 
 if (Astro.request.method === "POST") {
-  await signOut();
+  await signOut(Astro.cookies);
   return Astro.redirect("/login");
 }
 ---
@@ -80,6 +79,11 @@ if (Astro.request.method === "POST") {
 
           <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
             <div class="p-2">
+              
+              <div class="px-4 py-2 border-b border-border mb-1">
+                <p class="text-xs text-textMain/60">Conectado como</p>
+                <p class="text-sm font-bold text-textMain truncate" title={user?.email}>{user?.email}</p>
+              </div>
               <a href="/profile" class="block px-4 py-2 text-sm font-medium text-textMain hover:bg-slate-50 rounded-lg">Mi Perfil</a>
               <form method="POST" class="w-full m-0">
                 <button type="submit" class="w-full text-left px-4 py-2 text-sm font-medium text-error hover:bg-red-50 rounded-lg transition-colors">

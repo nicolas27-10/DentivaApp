@@ -2,23 +2,40 @@
 import DashboardLayout from '../layouts/DashboardLayout.astro';
 import UnitCard from '../components/UnitCard.astro';
 import LeaderboardTable from '../components/LeaderboardTable.astro';
-import { getSession, signOut } from '@/lib/auth';
 import { getModulesWithProgress } from '@/lib/modules';
 import { supabase } from '@/lib/supabaseClient';
 
-// 1. Obtener usuario actual
-const { data: { session } } = await supabase.auth.getSession();
-const user = session?.user;
-
-// 🛑 GUARDIA DE SEGURIDAD: Si no hay usuario, lo mandamos al login
-if (!user) {
+// 🛑 MANEJO DEL LOGOUT: Si el usuario presiona "Cerrar sesión"
+if (Astro.request.method === 'POST') {
+  Astro.cookies.delete('sb-access-token', { path: '/' });
+  Astro.cookies.delete('sb-refresh-token', { path: '/' });
   return Astro.redirect('/login');
 }
 
-// Como ya pasamos el guardia, sabemos que 'user' existe seguro
+// 1. LEER LAS COOKIES DEL NAVEGADOR (¡La clave para aislar sesiones!)
+const accessToken = Astro.cookies.get('sb-access-token');
+const refreshToken = Astro.cookies.get('sb-refresh-token');
+
+// 🛑 GUARDIA 1: Si no hay tokens en este navegador, al login
+if (!accessToken || !refreshToken) {
+  return Astro.redirect('/login');
+}
+
+// 2. VALIDAR EL USUARIO CON SU TOKEN ÚNICO
+const { data, error } = await supabase.auth.getUser(accessToken.value);
+
+// 🛑 GUARDIA 2: Si el token es inválido o expiró, limpiamos y mandamos al login
+if (error || !data?.user) {
+  Astro.cookies.delete('sb-access-token', { path: '/' });
+  Astro.cookies.delete('sb-refresh-token', { path: '/' });
+  return Astro.redirect('/login');
+}
+
+// Como ya pasamos los guardias, sabemos que 'user' es 100% el dueño de este navegador
+const user = data.user;
 const userId = user.id;
 
-// Extraer el nombre para el saludo (buscando en la metadata del form de registro)
+// Extraer el nombre para el saludo
 const rawName = user.user_metadata?.display_name 
   || user.user_metadata?.displayName 
   || user.user_metadata?.full_name 
@@ -32,7 +49,7 @@ const firstName = rawName.trim().split(' ')[0];
 // 2. Llamamos a tu función de módulos
 const modules = await getModulesWithProgress(userId);
 
-// 3. Calcular el progreso real de "APRENDER" (Ejercicios totales vs intentados)
+// 3. Calcular el progreso real de "APRENDER"
 const { count: totalExercises } = await supabase
   .from("exercises")
   .select("*", { count: "exact", head: true });
@@ -50,13 +67,13 @@ if (user) {
 
 const aprenderPercentage = totalExercises ? Math.round((completedExercisesCount / totalExercises) * 100) : 0;
 
-// 4. PLACEHOLDERS para las métricas del Mockup (se conectarán después)
-const fspPercentage = 0; // Se conectará al Simulador FSP
-const wordsLearned = 0;  // Se conectará a la tabla Glossary
-const badgesCount = 0;   // Se conectará al sistema de logros
-const studyHours = 0;    // Se conectará a la tabla de sesiones
+// 4. PLACEHOLDERS para las métricas
+const fspPercentage = 0; 
+const wordsLearned = 0;  
+const badgesCount = 0;   
+const studyHours = 0;    
 
-// 5. Mock de Leaderboard (lo mantenemos igual)
+// 5. Mock de Leaderboard
 const leaderboardPreview = [
   { rank: 1, username: 'dentista_2024', score: 2450, country: 'España' },
   { rank: 2, username: 'dr_schmidt', score: 2320, country: 'Alemania' },
@@ -129,7 +146,7 @@ const leaderboardPreview = [
     </div>
   </section>
 
-  <section  class="mb-12">
+  <section class="mb-12">
     <h2 class="text-lg font-semibold text-textMain mb-4">Unidades de estudio</h2>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {modules.map((module) => (

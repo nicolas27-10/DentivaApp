@@ -4,7 +4,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 import { signIn } from '../lib/auth';
 import { getSession } from "../lib/auth";
 
-const session = await getSession();
+const session = await getSession(Astro.cookies);
 
 if (session) {
   return Astro.redirect("/dashboard");
@@ -23,7 +23,7 @@ if (Astro.request.method === 'POST') {
     errorMessage = 'No se pudo procesar el formulario (Content-Type inválido).';
   } else {
     const formData = await Astro.request.formData();
-    const { error } = await signIn(formData);
+    const { error } = await signIn(formData, Astro.cookies);
     if (error) {
       errorMessage = error.message ?? 'No se pudo iniciar sesión.';
     } else {
