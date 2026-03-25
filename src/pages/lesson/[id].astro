@@ -5,9 +5,18 @@ import { supabase } from "../../lib/supabaseClient";
 
 const { id } = Astro.params;
 
-// 1. Obtener el usuario actual
-const { data: { session } } = await supabase.auth.getSession();
-const userId = session?.user?.id;
+// ✅ ESTO AÍSLA CADA SESIÓN PERFECTAMENTE
+import { getSession } from '@/lib/auth';
+
+// 1. Obtener el usuario actual desde nuestra función segura
+const user = await getSession(Astro.cookies);
+
+// 🛑 GUARDIA: Si no hay usuario (sesión expirada o inválida), lo mandamos al login
+if (!user) {
+  return Astro.redirect('/login');
+}
+
+const userId = user.id;
 
 // Si no hay usuario, redirigir al login (buena práctica)
 if (!userId) {

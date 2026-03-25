@@ -3,7 +3,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 import { signUp } from '../lib/auth';
 import { getSession } from "../lib/auth";
 
-const session = await getSession();
+const session = await getSession(Astro.cookies);
 
 if (session) {
   return Astro.redirect("/dashboard");
