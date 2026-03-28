@@ -26,9 +26,8 @@ const { data: moduleData } = await supabase
   .select("*")
   .eq("id", id)
   .single()
-  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
+  .setHeader('Authorization', `Bearer ${token}`);
 
-// Ahora si no encuentra el módulo, sí es porque no existe
 if (!moduleData) {
   return Astro.redirect('/dashboard');
 }
@@ -39,7 +38,7 @@ const { data: lessons } = await supabase
   .select("*")
   .eq("module_id", id)
   .order("order_index", { ascending: true })
-  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
+  .setHeader('Authorization', `Bearer ${token}`);
 
 // --- NUEVA LÓGICA DE PROGRESO ---
 const lessonIds = lessons?.map(l => l.id) || [];
@@ -49,7 +48,7 @@ const { data: allExercises } = await supabase
   .from("exercises")
   .select("id, lesson_id")
   .in("lesson_id", lessonIds)
-  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
+  .setHeader('Authorization', `Bearer ${token}`);
 
 // 5. Obtener los intentos del usuario (¡Con Token!)
 const exerciseIds = allExercises?.map(e => e.id) || [];
@@ -61,7 +60,7 @@ if (userId && exerciseIds.length > 0) {
     .select("exercise_id")
     .eq("user_id", userId)
     .in("exercise_id", exerciseIds)
-    .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
+    .setHeader('Authorization', `Bearer ${token}`);
   
   attemptedExerciseIds = new Set(attempts?.map(a => a.exercise_id));
 }
@@ -88,13 +87,6 @@ const lessonsWithProgress = lessons?.map(lesson => {
   <div class="bg-card p-8 rounded-2xl border border-border shadow-sm mb-8">
     <h1 class="text-3xl font-bold mb-2 text-textMain">Unidad {moduleData.order_index}: {moduleData.title}</h1>
     <p class="text-textMain/70 text-lg">{moduleData.description}</p>
-  </div>
-
-  <div class="mb-10 p-6 border-2 border-dashed border-border rounded-xl bg-blue-50/30">
-    <h3 class="font-bold text-blue-900 mb-2">📚 Material de estudio del módulo</h3>
-    <p class="text-sm text-blue-800/70 italic">
-      [Placeholder: Aquí integraremos los PDFs o documentos teóricos descargables usando Supabase Storage más adelante.]
-    </p>
   </div>
 
   <h2 class="text-2xl font-bold mb-6 text-textMain">Lecciones de esta unidad</h2>

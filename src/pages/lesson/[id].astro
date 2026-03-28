@@ -25,12 +25,27 @@ const { data: lesson, error: lessonError } = await supabase
   .select("*")
   .eq("id", id)
   .single()
-  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
+  .setHeader('Authorization', `Bearer ${token}`);
 
 if (!lesson) {
   console.error("Error al cargar la lección:", lessonError);
   return Astro.redirect('/dashboard?error=lesson_not_found');
 }
+
+// 📦 OBTENER LAS IMÁGENES DEL MATERIAL DE ESTUDIO DE ESTA LECCIÓN
+const { data: files } = await supabase
+  .storage
+  .from('study_materials')
+  .list(String(id), { 
+    sortBy: { column: 'name', order: 'asc' },
+  });
+
+// Filtramos para asegurar que sean imágenes y obtenemos sus URLs públicas
+const studyImages = files
+  ?.filter(file => file.name.match(/\.(png|jpg|jpeg|webp)$/i))
+  ?.map(file => {
+    return supabase.storage.from('study_materials').getPublicUrl(`${id}/${file.name}`).data.publicUrl;
+  }) || [];
 
 // 3. LA GRAN MEJORA: Obtener los ejercicios CON sus opciones (¡Con Token!)
 const { data: exercises, error: exercisesError } = await supabase
@@ -49,12 +64,13 @@ const { data: exercises, error: exercisesError } = await supabase
   `)
   .eq("lesson_id", id)
   .order("order_index")
-  .setHeader('Authorization', `Bearer ${token}`); // 👈 Magia inyectada
+  .setHeader('Authorization', `Bearer ${token}`);
 
 console.log("--- DEBUG SUPABASE ---");
 console.log("ID de la lección actual:", id);
 console.log("Error de Supabase (Lección):", lessonError?.message || "Ninguno");
 console.log("Error de Supabase (Ejercicios):", exercisesError?.message || "Ninguno");
+console.log("Imágenes encontradas en Storage:", studyImages.length);
 console.log("Ejercicios encontrados:", exercises?.length || 0);
 console.log("----------------------");
 ---
@@ -74,6 +90,35 @@ console.log("----------------------");
         <p>{lesson.content}</p>
       </div>
     </div>
+
+    {/* --- INICIO DEL VISOR DE MATERIAL DE ESTUDIO --- */}
+    {studyImages.length > 0 && (
+      <div class="mb-10 p-6 border border-border rounded-xl bg-card shadow-sm">
+        <h3 class="font-bold text-textMain mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          Material de Estudio: {lesson.title}
+        </h3>
+        
+        {/* Contenedor con scroll interno y bloqueo de clic derecho */}
+        <div 
+          class="flex flex-col gap-4 max-h-[600px] overflow-y-auto p-4 bg-[#f8f9fa] rounded-lg border border-border custom-scrollbar" 
+          oncontextmenu="return false;"
+        >
+          {studyImages.map((imgUrl, index) => (
+            <img 
+              src={imgUrl} 
+              alt={`Página ${index + 1} de ${lesson.title}`} 
+              class="w-full h-auto rounded-md shadow-sm pointer-events-none select-none"
+              loading="lazy"
+            />
+          ))}
+        </div>
+        <p class="text-xs text-center mt-3 text-textMain/50 font-medium">
+          🔒 Documento protegido. Desliza hacia abajo para leer todas las páginas.
+        </p>
+      </div>
+    )}
+    {/* --- FIN DEL VISOR --- */}
 
     <div class="mt-8">
       <h2 class="text-xl font-semibold mb-6 text-textMain">Ejercicios de la Lección</h2>
