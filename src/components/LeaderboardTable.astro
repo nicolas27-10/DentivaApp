@@ -1,44 +1,71 @@
 ---
-// TODO: Leaderboard system - fetch real data from Supabase, filter by week
-interface Props {
-  entries?: Array<{ rank: number; username: string; score: number; country?: string }>;
+// Importa tu cliente de Supabase (ajusta la ruta según tu proyecto)
+import { supabase } from '@/lib/supabaseClient';
+
+// 1. Pedimos a Supabase los campos username y total_fsp_points
+// 2. Los ordenamos de mayor a menor (ascending: false)
+// 3. Limitamos a los mejores 10
+const { data: leaderboard, error } = await supabase
+  .from('profiles')
+  .select('username, total_fsp_points')
+  .order('total_fsp_points', { ascending: false })
+  .limit(10);
+
+if (error) {
+  console.error("🛑 Error cargando la leaderboard:", error);
 }
 
-const {
-  entries = [
-    { rank: 1, username: 'dentista_2024', score: 2450, country: 'España' },
-    { rank: 2, username: 'dr_schmidt', score: 2320, country: 'Alemania' },
-    { rank: 3, username: 'maria_odont', score: 2180, country: 'Colombia' },
-    { rank: 4, username: 'carlos_dds', score: 2050, country: 'México' },
-    { rank: 5, username: 'laura_dent', score: 1980, country: 'Argentina' },
-    { rank: 6, username: 'pablo_odonto', score: 1850, country: 'Chile' },
-    { rank: 7, username: 'ana_periodont', score: 1720, country: 'Perú' },
-    { rank: 8, username: 'jose_implantes', score: 1650, country: 'España' },
-    { rank: 9, username: 'sofia_dent', score: 1580, country: 'Ecuador' },
-    { rank: 10, username: 'miguel_ortho', score: 1490, country: 'Venezuela' },
-  ],
-} = Astro.props;
+// Opcional: Si quieres asegurarte de que no traiga usuarios con 0 puntos
+const activeUsers = leaderboard?.filter(user => user.total_fsp_points > 0) || [];
 ---
 
-<div class="bg-card rounded-lg border border-border overflow-hidden shadow-sm">
-  <table class="w-full">
-    <thead class="bg-background border-b border-border">
-      <tr>
-        <th class="px-6 py-4 text-left text-xs font-semibold text-textMain/70 uppercase">#</th>
-        <th class="px-6 py-4 text-left text-xs font-semibold text-textMain/70 uppercase">Usuario</th>
-        <th class="px-6 py-4 text-left text-xs font-semibold text-textMain/70 uppercase">Puntos</th>
-        <th class="px-6 py-4 text-left text-xs font-semibold text-textMain/70 uppercase">País</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-border">
-      {entries.map((e) => (
-        <tr class="hover:bg-background transition-colors">
-          <td class="px-6 py-4 text-textMain font-medium">{e.rank}</td>
-          <td class="px-6 py-4 text-textMain/80">{e.username}</td>
-          <td class="px-6 py-4 text-primary font-semibold">{e.score}</td>
-          <td class="px-6 py-4 text-textMain/70">{e.country ?? '—'}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+  <div class="flex justify-between items-center mb-6">
+    <!-- <h2 class="text-xl font-bold text-textMain flex items-center gap-2">
+      🏆 Clasificación FSP
+    </h2> -->
+  </div>
+  
+  <div class="flex flex-col gap-2">
+    {activeUsers.length > 0 ? (
+      activeUsers.map((user, index) => {
+        // Le damos un color especial al Top 3
+        const isFirst = index === 0;
+        const isSecond = index === 1;
+        const isThird = index === 2;
+        
+        return (
+          <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+            <div class="flex items-center gap-4">
+              <span class={`font-black text-lg w-6 text-center
+                ${isFirst ? 'text-yellow-500' : 
+                  isSecond ? 'text-gray-400' : 
+                  isThird ? 'text-amber-700' : 'text-gray-300'}`}>
+                {index + 1}
+              </span>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-[#2B8EB5] flex items-center justify-center font-bold text-sm">
+                  {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                </div>
+                <span class="font-semibold text-gray-700">
+                  {user.username || 'Usuario Anónimo'}
+                </span>
+              </div>
+            </div>
+            <div class="font-bold text-[#2B8EB5] bg-blue-50 px-3 py-1 rounded-lg text-sm">
+              {user.total_fsp_points} pts
+            </div>
+          </div>
+        );
+      })
+    ) : (
+      <div class="text-center py-8 text-gray-400">
+        <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <p class="text-sm font-medium">Aún no hay puntajes registrados.</p>
+        <p class="text-xs mt-1">¡Sé el primero en completar el modo FSP!</p>
+      </div>
+    )}
+  </div>
 </div>

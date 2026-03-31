@@ -76,11 +76,11 @@ console.log("----------------------");
 ---
 
 <DashboardLayout title={lesson.title}>
-  <div class="max-w-3xl mx-auto">
+  <div class="mx-auto">
 
     <div class="mb-6">
       <a href={`/module/${lesson.module_id}`} class="text-primary hover:underline text-sm font-medium">
-        &larr; Volver al módulo
+        &larr; Zurück zum Modul
       </a>
     </div>
     
@@ -96,7 +96,7 @@ console.log("----------------------");
       <div class="mb-10 p-6 border border-border rounded-xl bg-card shadow-sm">
         <h3 class="font-bold text-textMain mb-4 flex items-center gap-2">
           <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-          Material de Estudio: {lesson.title}
+          Lernmaterial: {lesson.title}
         </h3>
         
         {/* Contenedor con scroll interno y bloqueo de clic derecho */}
@@ -110,18 +110,19 @@ console.log("----------------------");
               alt={`Página ${index + 1} de ${lesson.title}`} 
               class="w-full h-auto rounded-md shadow-sm pointer-events-none select-none"
               loading="lazy"
+              
             />
           ))}
         </div>
         <p class="text-xs text-center mt-3 text-textMain/50 font-medium">
-          🔒 Documento protegido. Desliza hacia abajo para leer todas las páginas.
+          🔒 Geschütztes Dokument. Scrollen Sie nach unten, um alle Seiten zu lesen.
         </p>
       </div>
     )}
     {/* --- FIN DEL VISOR --- */}
 
     <div class="mt-8">
-      <h2 class="text-xl font-semibold mb-6 text-textMain">Ejercicios de la Lección</h2>
+      <h2 class="text-xl font-semibold mb-6 text-textMain">Unterrichtsübungen</h2>
       
       {exercises && exercises.length > 0 ? (
         <VerticalQuiz 
@@ -132,7 +133,7 @@ console.log("----------------------");
           moduleId={lesson.module_id}
         />
       ) : (
-        <p class="text-gray-500 text-center py-8">Aún no hay ejercicios para esta lección.</p>
+        <p class="text-gray-500 text-center py-8">Für diese Lektion gibt es noch keine Übungen.</p>
       )}
     </div>
 

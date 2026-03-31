@@ -1,6 +1,10 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import LeaderboardTable from '../components/LeaderboardTable.astro';
+import { getSession } from "../lib/auth";
+
+const session = await getSession(Astro.cookies);
+
 
 // TODO: Leaderboard system - fetch from Supabase, filter by week
 ---

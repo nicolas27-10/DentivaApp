@@ -6,10 +6,11 @@ interface Props {
 const { title = 'Dashboard - Dentiva' } = Astro.props;
 import Appnavbar from '@/components/Appnavbar.astro';
 import '../styles/global.css';
+
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,11 +18,11 @@ import '../styles/global.css';
     <link rel="apple-touch-icon" href="/DentivaLogoSm.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@100..800&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#4AAED9" />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen flex flex-col bg-background text-textMain">
+  <body class="min-h-screen flex flex-col bg-background text-textMain ">
     <Appnavbar/>
     <main class="flex-1 container mx-auto px-4 py-8 max-w-6xl">
       <slot />

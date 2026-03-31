@@ -80,22 +80,27 @@ const lessonsWithProgress = lessons?.map(lesson => {
   
   <div class="mb-6">
     <a href="/dashboard" class="text-primary hover:underline text-sm font-medium">
-      &larr; Volver al dashboard
+      &larr; Zurück zum Dashboard
     </a>
   </div>
 
-  <div class="bg-card p-8 rounded-2xl border border-border shadow-sm mb-8">
-    <h1 class="text-3xl font-bold mb-2 text-textMain">Unidad {moduleData.order_index}: {moduleData.title}</h1>
+  <div class="bg-card p-8 rounded-2xl border-2 border-border shadow-md mb-8">
+    <h1 class="text-3xl font-bold mb-2 text-textMain flex gap-2">
+      <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+      {moduleData.title}
+    </h1>
     <p class="text-textMain/70 text-lg">{moduleData.description}</p>
   </div>
 
-  <h2 class="text-2xl font-bold mb-6 text-textMain">Lecciones de esta unidad</h2>
+  <h2 class="text-2xl font-bold mb-6 text-textMain">Lehren aus diesem Modul</h2>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {lessonsWithProgress.map((lesson) => (
       <a 
         href={`/lesson/${lesson.id}`}
-        class="flex flex-col h-full bg-card border border-border rounded-xl p-6 hover:border-primary hover:shadow-md transition-all group relative overflow-hidden"
+        class="flex flex-col h-full bg-card border-2 border-border rounded-xl p-6 hover:border-primary hover:shadow-md transition-all group relative overflow-hidden"
       >
         {lesson.percentage === 100 && (
           <div class="absolute inset-0 bg-green-50/30 pointer-events-none"></div>
@@ -104,7 +109,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
         <div class="flex-grow relative z-10">
           <div class="flex justify-between items-start mb-2">
             <span class="text-xs font-bold text-primary uppercase tracking-wider block">
-              Lección {moduleData.order_index}.{lesson.order_index}
+              Lektion {moduleData.order_index}.{lesson.order_index}
             </span>
             {lesson.percentage === 100 && (
               <span class="text-green-500" title="Completada">✅</span>
@@ -120,7 +125,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
 
           <div class="mt-auto">
             <div class="flex justify-between text-xs font-medium text-textMain/60 mb-1">
-              <span>Progreso</span>
+              <span>Fortschritt</span>
               <span>{lesson.percentage}%</span>
             </div>
             <div class="h-1.5 w-full bg-border rounded-full overflow-hidden">
@@ -133,7 +138,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
         </div>
         
         <div class="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm font-medium text-primary relative z-10">
-          <span>{lesson.percentage === 100 ? 'Repasar lección' : lesson.percentage > 0 ? 'Continuar lección' : 'Entrar a la lección'}</span>
+          <span>{lesson.percentage === 100 ? 'Lektion wiederholen' : lesson.percentage > 0 ? 'Setzen Sie die Lektion fort' : 'Betreten Sie die Lektion'}</span>
           <span class="transform group-hover:translate-x-1 transition-transform">→</span>
         </div>
       </a>
@@ -142,7 +147,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
 
   {lessonsWithProgress.length === 0 && (
     <div class="text-center p-8 border border-border rounded-xl bg-card">
-      <p class="text-textMain/60">Aún no hay lecciones creadas para este módulo.</p>
+      <p class="text-textMain/60">Für dieses Modul wurden noch keine Lektionen erstellt.</p>
     </div>
   )}
 

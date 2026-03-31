@@ -4,6 +4,7 @@ import UnitCard from '../components/UnitCard.astro';
 import LeaderboardTable from '../components/LeaderboardTable.astro';
 import { getModulesWithProgress } from '@/lib/modules';
 import { supabase } from '@/lib/supabaseClient';
+import GeneralProgress from '../components/GeneralProgress';
 
 // 🛑 MANEJO DEL LOGOUT: Si el usuario presiona "Cerrar sesión"
 if (Astro.request.method === 'POST') {
@@ -49,43 +50,18 @@ const firstName = rawName.trim().split(' ')[0];
 // 2. Llamamos a tu función de módulos
 const modules = await getModulesWithProgress(userId, Astro.cookies);
 
-// 3. Calcular el progreso real de "APRENDER"
-const { count: totalExercises } = await supabase
-  .from("exercises")
-  .select("*", { count: "exact", head: true });
-
-let completedExercisesCount = 0;
-if (user) {
-  const { data: attempts } = await supabase
-    .from("user_attempts")
-    .select("exercise_id")
-    .eq("user_id", user.id)
-    .setHeader('Authorization', `Bearer ${accessToken.value}`);
-  
-  const uniqueAttempts = new Set(attempts?.map(a => a.exercise_id));
-  completedExercisesCount = uniqueAttempts.size;
-}
-
-const aprenderPercentage = totalExercises ? Math.round((completedExercisesCount / totalExercises) * 100) : 0;
-
 // 4. PLACEHOLDERS para las métricas
 const fspPercentage = 0; 
 const wordsLearned = 0;  
 const badgesCount = 0;   
 const studyHours = 0;    
 
-// 5. Mock de Leaderboard
-const leaderboardPreview = [
-  { rank: 1, username: 'dentista_2024', score: 2450, country: 'España' },
-  { rank: 2, username: 'dr_schmidt', score: 2320, country: 'Alemania' },
-  { rank: 3, username: 'maria_odont', score: 2180, country: 'Colombia' },
-];
 ---
 
 <DashboardLayout title="Dashboard - Dentiva">
   
-  <section class="mb-12">
-    <div class="bg-card border border-border rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 justify-between items-center shadow-sm">
+  <section id="fortschritt" class="mb-12 scroll-mt-24">
+    <div class="bg-card border border-border rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 justify-between items-center shadow-md">
       
       <div class="w-full lg:w-1/4 text-center lg:text-left min-w-0">
         <h1 class="text-3xl font-extrabold text-textMain mb-1 truncate" title={`Hallo, ${firstName}`}>
@@ -97,18 +73,11 @@ const leaderboardPreview = [
       </div>
 
       <div class="w-full lg:w-2/5 space-y-5">
-        <div>
-          <div class="flex justify-between text-xs font-bold text-textMain mb-2 tracking-wide">
-            <span class="uppercase flex items-center gap-2">
-              <svg class="w-4 h-4 text-textMain/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              APRENDER
-            </span>
-            <span class="text-[#2B8EB5]">{aprenderPercentage}%</span>
-          </div>
-          <div class="h-3 w-full bg-blue-100 rounded-full overflow-hidden">
-            <div class="h-full bg-[#2B8EB5] transition-all duration-1000 ease-out rounded-full" style={`width: ${aprenderPercentage}%`}></div>
-          </div>
-        </div>
+        <GeneralProgress 
+        client:load 
+        userId={userId} 
+        accessToken={accessToken.value} 
+      />
 
         <div>
           <div class="flex justify-between text-xs font-bold text-textMain mb-2 tracking-wide">
@@ -147,8 +116,12 @@ const leaderboardPreview = [
     </div>
   </section>
 
-  <section class="mb-12">
-    <h2 class="text-lg font-semibold text-textMain mb-4">Unidades de estudio</h2>
+  <section id="learn" class="mb-12 scroll-mt-24">
+    <h2 class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2">
+      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        Lernen  
+    </h2>
+
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {modules.map((module) => (
         <UnitCard
@@ -163,22 +136,14 @@ const leaderboardPreview = [
     </div>
   </section>
 
-  <section class="mb-12">
+  <section id="leaderboard" class="mb-12">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-textMain">Clasificación semanal</h2>
-      <a href="/leaderboard" class="text-sm text-primary hover:underline">Ver clasificación completa →</a>
+      <h2 class="text-lg font-semibold text-textMain flex items-center gap-2">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+      Wöchentliches Ranking
+      </h2>
     </div>
-    <LeaderboardTable entries={leaderboardPreview} />
-  </section>
-
-  <section class="mb-12">
-    <div class="flex items-center justify-end">
-      <form method="POST">
-        <button type="submit" class="bg-error rounded-xl px-8 py-4 text-base font-medium text-white hover:bg-error/90 transition-colors">
-          Cerrar sesión
-        </button>
-      </form>
-    </div>
+    <LeaderboardTable/>
   </section>
   
 </DashboardLayout>

@@ -3,11 +3,26 @@ import MainLayout from '../layouts/MainLayout.astro';
 import Hero from '../components/Hero.astro';
 import Features from '../components/Features.astro';
 import PricingTable from '../components/PricingTable.astro';
+import LeaderboardTable from '@/components/LeaderboardTable.astro';
 ---
 
 <MainLayout title="Dentiva - Valida tu título dental en Alemania">
   <Hero />
   <Features />
+  <section class="py-16 px-4">
+    <div class="container mx-auto max-w-4xl text-center">
+      <h2 class="text-3xl font-bold text-textMain mb-4">
+        Únete a nuestra comunidad activa 🏆
+      </h2>
+      <p class="text-textMain/70 mb-10 max-w-2xl mx-auto">
+        Cientos de odontólogos ya se están preparando para su examen en Alemania. ¡Mira quiénes lideran el ranking esta semana!
+      </p>
+      
+      {/* Tu componente de tabla */}
+      <LeaderboardTable />
+      
+    </div>
+  </section>
   <PricingTable />
   <section class="py-20 px-4 bg-accent text-white">
     <div class="container mx-auto max-w-3xl text-center">

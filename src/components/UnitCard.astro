@@ -20,8 +20,8 @@ const {
 } = Astro.props;
 
 // Lógica de clases dinámicas
-const baseClasses = "box-border block p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative min-h-[160px]";
-const activeClasses = "ring-border border-primary shadow-sm hover:shadow-primary/20 hover:-translate-y-1";
+const baseClasses = "box-border p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative min-h-[160px] justify-between flex flex-col";
+const activeClasses = "ring-border border-primary shadow-md hover:shadow-lg hover:-translate-y-1 hover:ring-primary cursor-pointer";
 
 // Diferenciamos el estilo visual del bloqueo
 const isPremiumLock = isLocked && lockReason === 'subscription_required';
@@ -71,15 +71,15 @@ const cardClasses = `${baseClasses} ${isLocked ? lockedClasses : activeClasses}`
       <div class="flex flex-col gap-2">
         {lockReason === 'subscription_required' ? (
           <div class="flex flex-col">
-            <span class="text-[11px] font-bold text-yellow-700 uppercase tracking-wider">Contenido Premium</span>
+            <span class="text-[11px] font-bold text-yellow-700 uppercase tracking-wider">Premium-Inhalte</span>
             <a href="/pricing" class="relative z-20 text-xs text-blue-600 font-bold hover:underline mt-1">
-              Mejorar plan para desbloquear →
+              Plan zum Entsperren verbessern →
             </a>
           </div>
         ) : (
           <div class="flex flex-col">
-            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Módulo Bloqueado</span>
-            <span class="text-[10px] text-gray-400">Completa la unidad anterior primero</span>
+            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Gesperrtes Modul</span>
+            <span class="text-[10px] text-gray-400">Schließen Sie zuerst das vorherige Modul ab</span>
           </div>
         )}
       </div>
@@ -87,7 +87,7 @@ const cardClasses = `${baseClasses} ${isLocked ? lockedClasses : activeClasses}`
       /* Barra de progreso si está desbloqueado */
       <div>
         <div class="flex justify-between text-xs font-bold text-textMain/60 mb-1.5">
-          <span>Progreso</span>
+          <span>Fortschritt</span>
           <span>{progress}%</span>
         </div>
         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">

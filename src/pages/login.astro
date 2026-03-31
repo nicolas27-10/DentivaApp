@@ -20,12 +20,12 @@ if (Astro.request.method === 'POST') {
     !contentType.includes('application/x-www-form-urlencoded') &&
     !contentType.includes('multipart/form-data')
   ) {
-    errorMessage = 'No se pudo procesar el formulario (Content-Type inválido).';
+    errorMessage = 'Das Formular konnte nicht verarbeitet werden (Content-Type inválido).';
   } else {
     const formData = await Astro.request.formData();
     const { error } = await signIn(formData, Astro.cookies);
     if (error) {
-      errorMessage = error.message ?? 'No se pudo iniciar sesión.';
+      errorMessage = error.message ?? 'Wir konnten uns nicht einloggen.';
     } else {
       successMessage = 'Inicio de sesión exitoso.';
       return Astro.redirect('/dashboard')
@@ -34,8 +34,8 @@ if (Astro.request.method === 'POST') {
 }
 ---
 
-<AuthLayout title="Iniciar sesión - Dentiva">
-  <h1 class="text-2xl font-bold text-textMain mb-6">Iniciar sesión</h1>
+<AuthLayout title="Login - Dentiva">
+  <h1 class="text-2xl font-bold text-textMain mb-6">Login</h1>
   <form class="space-y-4" method="post" action="/login" enctype="multipart/form-data">
     {errorMessage && (
       <p class="mb-4 text-sm text-error bg-error/10 border border-error/30 rounded-lg px-4 py-3">
@@ -49,7 +49,7 @@ if (Astro.request.method === 'POST') {
     )}
     <div>
       <label for="email" class="block text-sm font-medium text-textMain/80 mb-1">
-        Email
+        E-Mail-Adresse
       </label>
       <input
         type="email"
@@ -57,12 +57,12 @@ if (Astro.request.method === 'POST') {
         name="email"
         required
         class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-        placeholder="tu@email.com"
+        placeholder="deine@email.de"
       />
     </div>
     <div>
       <label for="password" class="block text-sm font-medium text-textMain/80 mb-1">
-        Contraseña
+        Passwort
       </label>
       <input
         type="password"
@@ -76,10 +76,10 @@ if (Astro.request.method === 'POST') {
       type="submit"
       class="w-full py-3 px-4 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-colors"
     >
-      Iniciar sesión
+      Login
     </button>
   </form>
   <p class="mt-4 text-sm text-textMain/70">
-    ¿No tienes cuenta? <a href="/register" class="text-primary hover:underline">Regístrate</a>
+    Hast du kein Konto? <a href="/register" class="text-primary hover:underline">Melden Sie sich an</a>
   </p>
 </AuthLayout>
