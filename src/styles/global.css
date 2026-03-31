@@ -11,6 +11,11 @@
     unicode-range: U +0460 -052F, U +1C80 -1C8A, U +20B4, U +2DE0 -2DFF, U + A640-A69F, U + FE2E-FE2F;
 }
 
+
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', sans-serif;
+}
