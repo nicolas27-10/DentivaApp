@@ -4,29 +4,27 @@ import { getSession, signOut } from "@/lib/auth";
 const user = await getSession(Astro.cookies);
 const currentPath = Astro.url.pathname;
 
-// Función para saber si estamos en la ruta
-const isActive = (path: string) => currentPath === path;
-
 // Ahora los links incluyen un SVG (Icono)
+// IMPORTANTE: Cambié el primer href a '#fortschritt' para que pueda rastrear esa sección
 const navLinks = [
   { 
-    href: '/dashboard', 
-    label: 'Progreso', 
+    href: '/dashboard#fortschritt', 
+    label: 'Fortschritt', 
     icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18 M7 16l4-4 4 4 4-6" />' 
   },
   { 
-    href: '/aprender', 
-    label: 'Aprender', 
-    icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />' 
+    href: '/dashboard#learn', 
+    label: 'Lernen', 
+    icon: '<path stroke-linecap="round" stroke-Linejoin="round" stroke-Width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>' 
   },
   { 
-    href: '/fsp', 
+    href: '/dashboard#fsp', 
     label: 'FSP-Vorbereitung', 
     icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />' 
   },
   { 
-    href: '/leaderboard', 
-    label: 'Clasificación', 
+    href: '/dashboard#leaderboard', 
+    label: 'Einstufung', 
     icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />' 
   },
 ];
@@ -49,11 +47,7 @@ if (Astro.request.method === "POST") {
         {navLinks.map((link) => (
           <a
             href={link.href}
-            class={`flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all ${
-              isActive(link.href)
-                ? 'bg-[#E4F6FD] text-[#1A8AB8]' 
-                : 'text-textMain/60 hover:bg-slate-50 hover:text-textMain'
-            }`}
+            class="nav-item flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all text-textMain/60 hover:bg-slate-50 hover:text-textMain"
           >
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" set:html={link.icon} />
             {link.label}
@@ -67,7 +61,7 @@ if (Astro.request.method === "POST") {
           <svg class="w-4 h-4 text-[#F07830]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
           </svg>
-          12 Días
+          12 Tage
         </div>
 
         <div class="relative group cursor-pointer">
@@ -79,7 +73,6 @@ if (Astro.request.method === "POST") {
 
           <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
             <div class="p-2">
-              
               <div class="px-4 py-2 border-b border-border mb-1">
                 <p class="text-xs text-textMain/60">Conectado como</p>
                 <p class="text-sm font-bold text-textMain truncate" title={user?.email}>{user?.email}</p>
@@ -98,3 +91,47 @@ if (Astro.request.method === "POST") {
     </div>
   </div>
 </nav>
+
+<script>
+  // Esta función se encarga de vigilar el scroll
+  function initScrollspy() {
+    const navLinks = document.querySelectorAll('.nav-item');
+    // Busca todas las etiquetas <section> que tengan un ID en la página
+    const sections = document.querySelectorAll('section[id]');
+
+    // Opciones para determinar "cuándo" una sección está visible.
+    // El rootMargin compensa la altura de tu navbar (unos 100px)
+    const observerOptions = {
+      root: null,
+      rootMargin: '-200px 0px -60% 0px', 
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const currentId = entry.target.id;
+
+          navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            // Si el href del link termina con el ID de la sección visible
+            if (href && href.endsWith(`#${currentId}`)) {
+              // Estilos Activos (El fondo celeste y texto azul oscuro)
+              link.classList.add('bg-[#E4F6FD]', 'text-[#1A8AB8]');
+              link.classList.remove('text-textMain/60', 'hover:bg-slate-50', 'hover:text-textMain');
+            } else {
+              // Estilos Inactivos (Transparente y grisáceo)
+              link.classList.remove('bg-[#E4F6FD]', 'text-[#1A8AB8]');
+              link.classList.add('text-textMain/60', 'hover:bg-slate-50', 'hover:text-textMain');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(section => observer.observe(section));
+  }
+
+  // Ejecutamos el script cuando el HTML cargue
+  document.addEventListener('DOMContentLoaded', initScrollspy);
+</script>
