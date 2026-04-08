@@ -33,6 +33,19 @@ if (Astro.request.method === "POST") {
   await signOut(Astro.cookies);
   return Astro.redirect("/login");
 }
+
+if (Astro.request.method === "POST") {
+  try {
+    // Intentamos cerrar la sesión de forma elegante
+    await signOut(Astro.cookies);
+  } catch (error) {
+    // Si falla (ej. el usuario ya no tenía sesión válida), lo atrapamos aquí
+    console.error("Error silencioso al cerrar sesión:", error);
+  }
+  
+  // PASE LO QUE PASE (éxito o error), siempre redirigimos al login
+  return Astro.redirect("/login");
+}
 ---
 
 <nav class="bg-white border-b-4 border-border/60 sticky top-0 z-50">
