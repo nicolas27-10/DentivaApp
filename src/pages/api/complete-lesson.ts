@@ -1,20 +1,22 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Creamos el "Cliente Administrador" con la llave maestra
-const supabaseAdmin = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.SUPABASE_SERVICE_ROLE_KEY // 👈 La nueva llave
-);
-
-const SERVICE_ROLE_KEY = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!SERVICE_ROLE_KEY) {
-  throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
-}
-
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // 1. INICIALIZAMOS ADENTRO DE LA PETICIÓN
+    // Leemos de import.meta.env (Astro) y si falla, de process.env (Node)
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error("🚨 Faltan credenciales de Supabase al intentar guardar la lección");
+      return new Response(JSON.stringify({ error: 'Falta configuración en el servidor' }), { status: 500 });
+    }
+
+    // Creamos el cliente de forma segura porque ya verificamos que las llaves existen
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
+    // 2. PROCESAMOS LOS DATOS
     const body = await request.json();
     const { userId, lessonId, answers } = body;
 
@@ -34,7 +36,6 @@ export const POST: APIRoute = async ({ request }) => {
     const exerciseIds = attemptsToInsert.map(a => a.exercise_id);
     
     if (exerciseIds.length > 0) {
-      // 👇 USAMOS supabaseAdmin EN LUGAR DE supabase
       await supabaseAdmin
         .from('user_attempts')
         .delete()
@@ -48,7 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
       if (insertError) throw insertError;
     }
 
-    // OBTENEMOS EL MÓDULO
+    // OBTENEMOS EL MÓDULO PARA ACTUALIZAR EL PROGRESO
     const { data: lessonData } = await supabaseAdmin
       .from('lessons')
       .select('module_id')
@@ -101,6 +102,6 @@ export const POST: APIRoute = async ({ request }) => {
 
   } catch (error) {
     console.error('API Error:', error);
-    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error interno del servidor' }), { status: 500 });
   }
 };
