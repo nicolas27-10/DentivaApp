@@ -133,5 +133,5 @@ if (Astro.request.method === "POST") {
   }
 
   // Ejecutamos el script cuando el HTML cargue
-  document.addEventListener('DOMContentLoaded', initScrollspy);
+  document.addEventListener('astro:page-load', initScrollspy);
 </script>
