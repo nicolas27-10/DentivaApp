@@ -4,14 +4,15 @@ interface Props {
 }
 
 const { title = 'Dashboard - Dentiva' } = Astro.props;
+import { ClientRouter } from 'astro:transitions';
 import Appnavbar from '@/components/Appnavbar.astro';
 import '../styles/global.css';
-
 ---
 
 <!doctype html>
 <html lang="es" class="scroll-smooth">
   <head>
+    <ClientRouter/>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" sizes="32x32" href="/DentivaLogoSm.png" />
@@ -27,5 +28,36 @@ import '../styles/global.css';
     <main class="flex-1 container mx-auto px-4 py-8 max-w-6xl">
       <slot />
     </main>
+    
+    <div 
+      id="global-loader" 
+      class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"
+    >
+      <div class="relative w-16 h-16">
+        <div class="absolute inset-0 border-4 border-[#E4F6FD] rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-[#2B8EB5] rounded-full border-t-transparent animate-spin"></div>
+      </div>
+      <p class="mt-4 text-[#2B8EB5] font-bold text-sm tracking-widest animate-pulse uppercase">
+        Wird geladen...
+      </p>
+    </div>
+
+    <script is:inline>
+      document.addEventListener('astro:before-preparation', () => {
+        const loader = document.getElementById('global-loader');
+        if (loader) {
+          loader.classList.remove('opacity-0', 'pointer-events-none');
+          loader.classList.add('opacity-100');
+        }
+      });
+
+      document.addEventListener('astro:after-swap', () => {
+        const loader = document.getElementById('global-loader');
+        if (loader) {
+          loader.classList.remove('opacity-100');
+          loader.classList.add('opacity-0', 'pointer-events-none');
+        }
+      });
+    </script>
   </body>
 </html>
