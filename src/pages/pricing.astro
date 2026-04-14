@@ -1,17 +1,36 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import PricingTable from '../components/PricingTable.astro';
+import { supabase } from '@/lib/supabaseClient';
+
+// 1. Verificar estado de suscripción en el servidor
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+let isPremium = false;
+
+if (accessToken) {
+  const { data: { user } } = await supabase.auth.getUser(accessToken);
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_premium')
+      .eq('id', user.id)
+      .single();
+    
+    isPremium = profile?.is_premium || false;
+  }
+}
 ---
 
-<MainLayout title="Precios - Dentiva">
+<MainLayout title="Preise - Dentiva">
   <section class="py-16 px-4">
     <div class="container mx-auto max-w-5xl">
-      <h1 class="text-3xl font-bold text-textMain text-center mb-4">Planes de suscripción</h1>
+      <h1 class="text-3xl font-bold text-textMain text-center mb-4">Abonnement-Pläne</h1>
       <p class="text-textMain/70 text-center mb-12 max-w-2xl mx-auto">
-        Accede a todo el material de estudio, quizzes ilimitados y clasificación semanal. 
-        Sin compromiso de permanencia.
+        Erhalten Sie Zugriff auf alle Lernmaterialien, unbegrenzte Quizzes und das wöchentliche Ranking. 
+        Jederzeit kündbar.
       </p>
-      <PricingTable />
+      
+      <PricingTable isPremium={isPremium} />
     </div>
   </section>
 </MainLayout>

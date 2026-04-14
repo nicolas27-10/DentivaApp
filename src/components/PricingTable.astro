@@ -1,72 +1,158 @@
 ---
-// TODO: Stripe - integrate subscription checkout and plan management
-const plans = [
+// src/components/PricingTable.astro
+import { supabase } from "../lib/supabaseClient";
+
+interface Props {
+  isPremium?: boolean;
+}
+
+const { isPremium = false } = Astro.props;
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+
+type Plan = {
+  name: string;
+  price: string;
+  period: string;
+  priceId: string;
+  features?: string[];
+  cta: string;
+  highlight: boolean;
+};
+
+const plans: Plan[] = [
   {
-    name: 'Mensual',
-    price: '29',
-    period: 'mes',
-    features: ['Acceso a todo el material', 'Quizzes ilimitados', 'Progreso guardado', 'Clasificación'],
-    cta: 'Comenzar',
+    name: 'Monatlich',
+    price: '10',
+    period: 'Monat',
+    priceId: 'price_1TM0stBnioMQ03JUH5Dyrax4', 
+    features: ['Vollständiger Zugriff', 'Unbegrenzte Quizzes', 'Gespeicherter Fortschritt', 'Ranking'],
+    cta: 'Jetzt starten',
     highlight: false,
   },
   {
-    name: 'Anual',
-    price: '249',
-    period: 'año',
-    features: ['Todo de Mensual', '2 meses gratis', 'Prioridad en soporte', 'Certificado de finalización'],
-    cta: 'Mejor oferta',
+    name: 'Vierteljährlich',
+    price: '25',
+    period: 'Quartal',
+    priceId: 'price_1TM0tWBnioMQ03JUFa6hGZht', 
+    features: ['Vollständiger Zugriff', 'Unbegrenzte Quizzes', 'Gespeicherter Fortschritt', 'Ranking'],
+    cta: 'Jetzt starten',
+    highlight: false,
+  },
+  {
+    name: 'Jährlich',
+    price: '100',
+    period: 'Jahr',
+    priceId: 'price_1TM0u2BnioMQ03JUiK9cEfo8', 
+    features: ['Alles aus Monatlich', '2 Monate gratis', 'Prioritäts-Support', 'Zertifikat'],
+    cta: 'Bestes Angebot',
     highlight: true,
   },
 ];
 ---
 
-<section class="py-20 px-4 bg-background">
-  <div class="container mx-auto max-w-5xl">
-    <h2 class="text-3xl font-bold text-textMain text-center mb-4">
-      Planes simples y transparentes
-    </h2>
-    <p class="text-textMain/70 text-center mb-12">
-      Elige el plan que mejor se adapte a tus objetivos.
-    </p>
-    <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-      {plans.map((plan) => (
-        <div
-          class={`relative rounded-lg border p-8 ${
-            plan.highlight ? 'border-accent bg-card shadow-lg' : 'border-border bg-card'
-          }`}
-        >
-          {plan.highlight && (
-            <span
-              class="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-xs font-medium px-3 py-1 rounded-full"
-            >
-              Recomendado
-            </span>
-          )}
-          <h3 class="text-xl font-semibold text-textMain mb-2">{plan.name}</h3>
-          <div class="mb-6">
-            <span class="text-4xl font-bold text-textMain">€{plan.price}</span>
-            <span class="text-textMain/70">/{plan.period}</span>
-          </div>
-          <ul class="space-y-3 mb-8">
-            {plan.features.map((f) => (
-              <li class="flex items-center gap-2 text-textMain/80">
-                <span class="text-success">✓</span>
-                {f}
-              </li>
-            ))}
-          </ul>
+<section class="py-10 px-4">
+  <div class="grid md:grid-cols-3 gap-8 mx-auto max-w-5xl"> 
+    {plans.map((plan) => (
+      <div
+        class={`relative rounded-3xl border p-8 flex flex-col ${
+          plan.highlight ? 'border-primary bg-card shadow-lg ring-2 ring-primary/10' : 'border-border bg-card'
+        }`}
+      >
+        {plan.highlight && (
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+            Empfohlen
+          </span>
+        )}
+        
+        <h3 class="text-xl font-bold text-textMain mb-2">{plan.name}</h3>
+        <div class="mb-6">
+          <span class="text-4xl font-extrabold text-textMain">€{plan.price}</span>
+          <span class="text-textMain/70">/{plan.period}</span>
+        </div>
+
+        <ul class="space-y-3 mb-8 flex-grow">
+          {plan.features?.map((f) => (
+            <li class="flex items-start gap-2 text-sm text-textMain/80">
+              <span class="text-green-500 font-bold">✓</span>
+              {f}
+            </li>
+          ))}
+        </ul>
+        
+        {isPremium ? (
           <a
-            href="/register"
-            class={`block w-full text-center py-3 px-4 rounded-lg font-medium transition-colors ${
+            href="/dashboard"
+            class="block w-full text-center py-3 px-4 rounded-xl font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+          >
+            Abonniert — Zum Dashboard
+          </a>
+        ) : (
+          <button
+            data-price-id={plan.priceId}
+            class={`checkout-button block w-full text-center py-3 px-4 rounded-xl font-bold transition-all transform active:scale-95 ${
               plan.highlight
-                ? 'bg-accent text-white hover:bg-accent/90'
-                : 'bg-card text-textMain hover:bg-background'
+                ? 'bg-primary text-white hover:bg-primary/90 shadow-md'
+                : 'bg-background border border-border text-textMain hover:bg-slate-50'
             }`}
           >
             {plan.cta}
-          </a>
-        </div>
-      ))}
-    </div>
+          </button>
+        )}
+      </div>
+    ))}
   </div>
 </section>
+
+<div id="auth-context" data-token={accessToken}></div>
+
+<script>
+  import { supabase } from "../lib/supabaseClient";
+
+  const checkoutButtons = document.querySelectorAll('.checkout-button');
+  const authContext = document.getElementById('auth-context');
+  const accessToken = authContext?.dataset.token;
+
+  checkoutButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const priceId = btn.dataset.priceId;
+
+      if (!priceId) return;
+      if (!accessToken) {
+        alert("Bitte melden Sie sich an, um ein Abonnement abzuschließen.");
+        window.location.href = "/login";
+        return;
+      }
+
+      const originalText = btn.innerText;
+      btn.innerText = "Wird verarbeitet...";
+      btn.disabled = true;
+
+      try {
+        const { data, error } = await supabase.auth.getUser(accessToken);
+        if (error || !data?.user) throw new Error("Sitzung abgelaufen. Bitte erneut anmelden.");
+
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ priceId }),
+        });
+
+        const sessionData = await response.json();
+        if (sessionData.url) {
+          window.location.href = sessionData.url;
+        } else {
+          throw new Error(sessionData.error || 'Fehler beim Erstellen der Sitzung');
+        }
+      } catch (error: any) {
+        alert(error.message);
+        btn.innerText = originalText;
+        btn.disabled = false;
+        if (error.message.includes("Sitzung")) window.location.href = "/login";
+      }
+    });
+  });
+</script>
