@@ -1,12 +1,12 @@
 ---
+// src/components/UnitCard.astro
 interface Props {
   id: string;
   title: string;
   description?: string;
   progress?: number;
-  quizCount?: number;
   isLocked?: boolean;
-  lockReason?: 'previous_incomplete' | 'subscription_required' | null; // 👈 Nueva prop
+  lockReason?: 'previous_incomplete' | 'subscription_required' | null;
 }
 
 const { 
@@ -14,52 +14,52 @@ const {
   title, 
   description = '', 
   progress = 0, 
-  quizCount = 0, 
   isLocked = false,
   lockReason = null
 } = Astro.props;
 
-// Lógica de clases dinámicas
+const isPremiumLock = isLocked && lockReason === 'subscription_required';
+const isProgressLock = isLocked && lockReason === 'previous_incomplete';
+
+// Lógica de estilos
 const baseClasses = "box-border p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative min-h-[160px] justify-between flex flex-col";
+
+// 1. Estilo ACTIVO (Desbloqueado o Premium ya pagado)
 const activeClasses = "ring-border border-primary shadow-md hover:shadow-lg hover:-translate-y-1 hover:ring-primary cursor-pointer";
 
-// Diferenciamos el estilo visual del bloqueo
-const isPremiumLock = isLocked && lockReason === 'subscription_required';
-const lockedClasses = isPremiumLock 
-  ? "ring-yellow-200 border-yellow-400 opacity-90 cursor-default" // Estilo Premium
-  : "ring-border/50 border-gray-400 opacity-60 grayscale cursor-not-allowed"; // Estilo Progreso
+// 2. Estilo PREMIUM BLOQUEADO (Elegante ámbar)
+const premiumLockedClasses = "ring-amber-100 border-amber-400 opacity-90 cursor-default bg-amber-50/20";
 
-const cardClasses = `${baseClasses} ${isLocked ? lockedClasses : activeClasses}`;
+// 3. Estilo PROGRESO BLOQUEADO (Gris apagado)
+const progressLockedClasses = "ring-slate-100 border-slate-300 opacity-60 grayscale cursor-not-allowed bg-slate-50/50";
+
+const cardClasses = `${baseClasses} ${
+  !isLocked ? activeClasses : (isPremiumLock ? premiumLockedClasses : progressLockedClasses)
+}`;
 ---
 
 <div class={cardClasses}>
   { !isLocked ? (
-    <a href={`/module/${id}`} class="absolute inset-0 z-10" aria-label={`Ir a ${title}`}></a>
+    <a href={`/module/${id}`} class="absolute inset-0 z-10" aria-label={`${title} öffnen`}></a>
   ) : null }
 
   <div class="flex items-start justify-between">
     <div class="pr-8"> 
-      <h3 class={`text-lg font-bold ${isPremiumLock ? 'text-yellow-900' : 'text-textMain'}`}>
+      <h3 class={`text-lg font-bold ${!isLocked ? 'text-textMain' : (isPremiumLock ? 'text-amber-900' : 'text-slate-500')}`}>
         {title}
       </h3>
-      
-      {description && (
-        <p class="text-textMain/70 text-sm mt-1 line-clamp-2">{description}</p>
-      )}
+      {description && <p class={`text-sm mt-1 line-clamp-2 ${isLocked ? 'text-textMain/40' : 'text-textMain/70'}`}>{description}</p>}
     </div>
 
     <div class="absolute top-6 right-6">
       {isLocked && (
         isPremiumLock ? (
-          <span class="text-yellow-600">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span class="text-amber-500">
+             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </span>
         ) : (
-          <span class="text-textMain/40">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
+          <span class="text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
           </span>
         )
       )}
@@ -68,33 +68,29 @@ const cardClasses = `${baseClasses} ${isLocked ? lockedClasses : activeClasses}`
 
   <div class="mt-6">
     {isLocked ? (
-      <div class="flex flex-col gap-2">
-        {lockReason === 'subscription_required' ? (
-          <div class="flex flex-col">
-            <span class="text-[11px] font-bold text-yellow-700 uppercase tracking-wider">Premium-Inhalte</span>
-            <a href="/pricing" class="relative z-20 text-xs text-blue-600 font-bold hover:underline mt-1">
-              Plan zum Entsperren verbessern →
+      <div class="flex flex-col gap-1">
+        {isPremiumLock ? (
+          <>
+            <span class="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Premium-Inhalt</span>
+            <a href="/pricing" class="relative z-20 text-xs text-blue-600 font-semibold hover:underline">
+              Upgrade für Zugriff →
             </a>
-          </div>
+          </>
         ) : (
-          <div class="flex flex-col">
-            <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Gesperrtes Modul</span>
-            <span class="text-[10px] text-gray-400">Schließen Sie zuerst das vorherige Modul ab</span>
-          </div>
+          <>
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Gesperrt</span>
+            <span class="text-[10px] text-slate-400 italic">Voriges Modul abschließen</span>
+          </>
         )}
       </div>
     ) : (
-      /* Barra de progreso si está desbloqueado */
       <div>
         <div class="flex justify-between text-xs font-bold text-textMain/60 mb-1.5">
           <span>Fortschritt</span>
           <span>{progress}%</span>
         </div>
         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            class="h-full bg-primary rounded-full transition-all duration-700"
-            style={`width: ${progress}%`}
-          />
+          <div class="h-full bg-primary rounded-full transition-all duration-700" style={`width: ${progress}%`} />
         </div>
       </div>
     )}
