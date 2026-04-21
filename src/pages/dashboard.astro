@@ -30,7 +30,7 @@ const userId = user.id;
 // 1. Obtener perfil con estado Premium actualizado
 const { data: profile } = await supabase
   .from('profiles')
-  .select('is_premium, total_fsp_points')
+  .select('is_premium, total_fsp_points, first_name')
   .eq('id', userId)
   .single();
 
@@ -48,7 +48,7 @@ const modules = rawModules.map((mod, index) => {
 
     // Si NO es premium y es módulo 3+, aplicamos el bloqueo dorado
     // Pero OJO: Si ya está bloqueado por progreso (gris), respetamos el gris
-    if (index >= 2 && !isPremium && mod.lockReason !== 'previous_incomplete') {
+    if (index >= 1 && !isPremium && mod.lockReason !== 'previous_incomplete') {
         return {
             ...mod,
             isLocked: true,
@@ -59,8 +59,7 @@ const modules = rawModules.map((mod, index) => {
     return mod;
 });
 
-const rawName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Student';
-const firstName = rawName.trim().split(' ')[0];
+const firstName = profile?.first_name || 'Student';
 const fspPercentage = Math.min(Math.round((profile?.total_fsp_points || 0) / 10), 100); 
 ---
 
