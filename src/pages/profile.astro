@@ -1,0 +1,270 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import { createClient } from "@supabase/supabase-js"; // 👈 Importamos esto para seguridad
+
+export const prerender = false;
+
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+  return Astro.redirect("/login");
+}
+
+// 1. Creamos un cliente de Supabase seguro que asume la identidad del usuario logueado
+const supabaseAuth = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_KEY,
+  {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken.value}`,
+      },
+    },
+  }
+);
+
+// Validamos el usuario con el cliente autenticado
+const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+if (authError || !user) {
+  Astro.cookies.delete("sb-access-token", { path: "/" });
+  Astro.cookies.delete("sb-refresh-token", { path: "/" });
+  return Astro.redirect("/login");
+}
+
+// 2. Leemos los parámetros de la URL para mostrar mensajes (Patrón PRG)
+const url = new URL(Astro.request.url);
+const successParam = url.searchParams.get("success");
+const errorParam = url.searchParams.get("error");
+
+let notice = successParam === "profile_updated" ? "Profil erfolgreich gespeichert." : 
+             successParam === "avatar_updated" ? "Avatar erfolgreich aktualisiert." : "";
+             
+let errorMessage = errorParam === "update_failed" ? "Profil konnte nicht gespeichert werden." : 
+                   errorParam === "avatar_failed" ? "Avatar konnte nicht hochgeladen werden." : "";
+
+// 3. Procesamos el Formulario (POST)
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const action = formData.get("action");
+
+  if (action === "update-profile") {
+    const firstName = String(formData.get("first_name") ?? "").trim();
+    const lastName = String(formData.get("last_name") ?? "").trim();
+
+    // Actualizamos usando el cliente seguro
+    const { error } = await supabaseAuth
+      .from("profiles")
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+      })
+      .eq("id", user.id);
+
+    // Redirigimos inmediatamente para evitar el ResponseSentError
+    if (error) {
+      return Astro.redirect("/profile?error=update_failed");
+    } else {
+      return Astro.redirect("/profile?success=profile_updated");
+    }
+  }
+
+  if (action === "upload-avatar") {
+    const avatar = formData.get("avatar");
+
+    if (!(avatar instanceof File) || avatar.size === 0) {
+      return Astro.redirect("/profile?error=avatar_failed");
+    }
+
+    const extension = avatar.name.split(".").pop()?.toLowerCase() || "jpg";
+    const filePath = `${user.id}/avatar-${Date.now()}.${extension}`;
+
+    const { error: uploadError } = await supabaseAuth.storage
+      .from("avatars")
+      .upload(filePath, avatar, { upsert: true });
+
+    if (uploadError) {
+      console.error("🛑 Error real de Supabase al subir:", uploadError);
+      return Astro.redirect("/profile?error=avatar_failed");
+    }
+
+    const { data: publicData } = supabaseAuth.storage.from("avatars").getPublicUrl(filePath);
+
+    const { error: profileError } = await supabaseAuth
+      .from("profiles")
+      .update({ avatar_url: publicData.publicUrl })
+      .eq("id", user.id);
+
+    if (profileError) {
+      return Astro.redirect("/profile?error=update_failed");
+    }
+
+    return Astro.redirect("/profile?success=avatar_updated");
+  }
+}
+
+// 4. Obtenemos los datos para mostrar en los inputs
+const { data: profile } = await supabaseAuth
+  .from("profiles")
+  .select("first_name, last_name, avatar_url, is_premium")
+  .eq("id", user.id)
+  .single();
+
+const firstName = profile?.first_name ?? "";
+const lastName = profile?.last_name ?? "";
+const avatarUrl = profile?.avatar_url ?? "";
+const isPremium = Boolean(profile?.is_premium);
+---
+
+<DashboardLayout title="Profil - Dentiva">
+  <section class="max-w-3xl mx-auto space-y-8">
+    <header class="bg-card border border-border rounded-3xl p-6 lg:p-8 shadow-md">
+      <h1 class="text-3xl font-extrabold text-textMain">Mein Profil</h1>
+      <p class="mt-2 text-textMain/70">
+        Verwalte hier deine persönlichen Daten und dein Abonnement.
+      </p>
+    </header>
+
+    {
+      errorMessage && (
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {errorMessage}
+        </div>
+      )
+    }
+    {
+      notice && (
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          {notice}
+        </div>
+      )
+    }
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <article class="bg-card border border-border rounded-3xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-textMain mb-4">Profilfoto</h2>
+        <div class="flex items-center gap-4 mb-5">
+          <img
+            src={avatarUrl || "/DentivaLogoSm.png"}
+            alt="Profilbild"
+            class="h-20 w-20 rounded-full object-cover border border-border bg-white"
+          />
+          <p class="text-sm text-textMain/70">Empfohlen: quadratisches Bild (JPG oder PNG)</p>
+        </div>
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+          <input type="hidden" name="action" value="upload-avatar" />
+          <input
+            type="file"
+            name="avatar"
+            accept="image/png,image/jpeg,image/webp"
+            class="block w-full text-sm text-textMain/80 file:mr-4 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-[#2B8EB5]"
+          />
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2B8EB5] transition-colors"
+          >
+            Foto hochladen
+          </button>
+        </form>
+      </article>
+
+      <article class="bg-card border border-border rounded-3xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-textMain mb-4">Persönliche Daten</h2>
+        <form method="POST" class="space-y-4">
+          <input type="hidden" name="action" value="update-profile" />
+          <div>
+            <label for="first_name" class="mb-1 block text-sm font-semibold text-textMain">
+              Vorname
+            </label>
+            <input
+              id="first_name"
+              name="first_name"
+              type="text"
+              value={firstName}
+              class="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-textMain outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              placeholder="Dein Vorname"
+              required
+            />
+          </div>
+          <div>
+            <label for="last_name" class="mb-1 block text-sm font-semibold text-textMain">
+              Nachname
+            </label>
+            <input
+              id="last_name"
+              name="last_name"
+              type="text"
+              value={lastName}
+              class="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-textMain outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              placeholder="Dein Nachname"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2B8EB5] transition-colors"
+          >
+            Änderungen speichern
+          </button>
+        </form>
+      </article>
+    </div>
+
+    <article class="bg-card border border-border rounded-3xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-textMain mb-2">Abonnement</h2>
+      {
+        isPremium ? (
+          <>
+            <p class="text-sm text-textMain/70 mb-4">
+              Du hast ein aktives Premium-Abonnement.
+            </p>
+            <button
+              id="manage-subscription"
+              type="button"
+              class="inline-flex items-center justify-center rounded-xl bg-[#20B273] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#179460] transition-colors"
+            >
+              Abonnement verwalten
+            </button>
+          </>
+        ) : (
+          <p class="text-sm text-textMain/70">
+            Du nutzt aktuell den kostenlosen Plan.
+          </p>
+        )
+      }
+    </article>
+  </section>
+
+  <script is:inline define:vars={{ accessToken: accessToken.value, isPremium }}>
+    const portalBtn = document.getElementById("manage-subscription");
+
+    if (portalBtn && isPremium) {
+      portalBtn.addEventListener("click", async () => {
+        portalBtn.setAttribute("disabled", "true");
+        portalBtn.textContent = "Wird geladen...";
+
+        try {
+          const response = await fetch("/api/create-portal-session", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          const payload = await response.json();
+          if (!response.ok || !payload.url) {
+            throw new Error(payload.error || "Portal konnte nicht geöffnet werden");
+          }
+
+          window.location.href = payload.url;
+        } catch (err) {
+          alert("Das Portal konnte nicht geöffnet werden. Bitte versuche es erneut.");
+          portalBtn.removeAttribute("disabled");
+          portalBtn.textContent = "Abonnement verwalten";
+        }
+      });
+    }
+  </script>
+</DashboardLayout>
