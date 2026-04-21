@@ -1,8 +1,10 @@
 ---
 import { getSession, signOut } from "@/lib/auth";
+import { supabase } from "@/lib/supabaseClient";
 
 const user = await getSession(Astro.cookies);
 const currentPath = Astro.url.pathname;
+let avatarUrl: string | null = null;
 
 // Ahora los links incluyen un SVG (Icono)
 // IMPORTANTE: Cambié el primer href a '#fortschritt' para que pueda rastrear esa sección
@@ -46,6 +48,16 @@ if (Astro.request.method === "POST") {
   // PASE LO QUE PASE (éxito o error), siempre redirigimos al login
   return Astro.redirect("/login");
 }
+
+if (user?.id) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", user.id)
+    .single();
+
+  avatarUrl = profile?.avatar_url ?? null;
+}
 ---
 
 <nav class="bg-white border-b-4 border-border/60 sticky top-0 z-50">
@@ -79,9 +91,19 @@ if (Astro.request.method === "POST") {
 
         <div class="relative group cursor-pointer">
           <div class="w-10 h-10 bg-[#E4F6FD] border-2 border-[#C0DFF0] rounded-full flex items-center justify-center text-[#3AAEDC]">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+            {
+              avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Profilbild"
+                  class="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )
+            }
           </div>
 
           <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
