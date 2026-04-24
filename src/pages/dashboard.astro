@@ -5,6 +5,7 @@ import LeaderboardTable from '../components/LeaderboardTable.astro';
 import { getModulesWithProgress } from '@/lib/modules';
 import { supabase } from '@/lib/supabaseClient';
 import GeneralProgress from '../components/GeneralProgress';
+import DashboardTrainingSection from '@/components/DashboardTrainingSection';
 
 if (Astro.request.method === 'POST') {
   Astro.cookies.delete('sb-access-token', { path: '/' });
@@ -124,6 +125,8 @@ const fspPercentage = Math.min(Math.round((profile?.total_fsp_points || 0) / 10)
       ))}
     </div>
   </section>
+
+  <DashboardTrainingSection client:load userId={userId} />
 
   <section id="leaderboard" class="mb-12">
     <h2 class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest">
