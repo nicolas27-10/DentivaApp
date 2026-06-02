@@ -1,10 +1,5 @@
-import { useState } from "react";
 import { BookOpen, Crown, Zap } from "lucide-react";
-import QuizComponent, { type QuizInitialSize } from "@/components/QuizComponent";
-
-type DashboardTrainingSectionProps = {
-  userId: string;
-};
+import type { QuizInitialSize } from "@/components/QuizComponent";
 
 const MODES: {
   size: QuizInitialSize;
@@ -47,13 +42,7 @@ const MODES: {
   },
 ];
 
-export default function DashboardTrainingSection({
-  userId,
-}: DashboardTrainingSectionProps) {
-  const [activeQuizSize, setActiveQuizSize] = useState<QuizInitialSize | null>(
-    null
-  );
-
+export default function DashboardTrainingSection() {
   return (
     <section
       id="entrenamiento"
@@ -75,54 +64,43 @@ export default function DashboardTrainingSection({
         </div>
       </div>
 
-      {activeQuizSize === null ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {MODES.map(
-            ({
-              size,
-              title,
-              subtitle,
-              description,
-              icon: Icon,
-              accentClass,
-              iconWrapClass,
-            }) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => setActiveQuizSize(size)}
-                className="dashboard-training__card group relative flex w-full flex-col rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        {MODES.map(
+          ({
+            size,
+            title,
+            subtitle,
+            description,
+            icon: Icon,
+            accentClass,
+            iconWrapClass,
+          }) => (
+            <a
+              key={size}
+              href={`/entrenamiento/${size}`}
+              className="dashboard-training__card group relative flex w-full flex-col rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <div
+                className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ring-2 ring-inset transition ${iconWrapClass}`}
               >
-                <div
-                  className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ring-2 ring-inset transition ${iconWrapClass}`}
-                >
-                  <Icon className={`h-6 w-6 ${accentClass}`} strokeWidth={2} />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-textMain/45">
-                  {subtitle}
-                </span>
-                <h3 className="mt-1 text-lg font-bold text-textMain">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-textMain/60">
-                  {description}
-                </p>
-                <span
-                  className={`mt-5 text-sm font-semibold ${accentClass} transition`}
-                >
-                  Comenzar →
-                </span>
-              </button>
-            )
-          )}
-        </div>
-      ) : (
-        <div className="dashboard-training__quiz rounded-2xl border border-border bg-card/80 p-4 shadow-sm sm:p-6 md:p-8">
-          <QuizComponent
-            userId={userId}
-            initialSize={activeQuizSize}
-            onRequestExit={() => setActiveQuizSize(null)}
-          />
-        </div>
-      )}
+                <Icon className={`h-6 w-6 ${accentClass}`} strokeWidth={2} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wider text-textMain/45">
+                {subtitle}
+              </span>
+              <h3 className="mt-1 text-lg font-bold text-textMain">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-textMain/60">
+                {description}
+              </p>
+              <span
+                className={`mt-5 text-sm font-semibold ${accentClass} transition`}
+              >
+                Comenzar →
+              </span>
+            </a>
+          )
+        )}
+      </div>
     </section>
   );
 }
