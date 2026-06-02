@@ -9,9 +9,9 @@ const isActive = (path: string) => currentPath === path;
 
 // Enlaces exclusivamente públicos (Landing Page)
 const navLinks = [
-  { href: '/', label: 'Inicio' },
-  { href: '/pricing', label: 'Precios' },
-  { href: '/#leaderboard', label: 'Clasificación' },
+  { href: '/', label: 'Startseite' },
+  { href: '/pricing', label: 'Preise' },
+  // { href: '/#leaderboard', label: 'Bestenliste' },
 ];
 ---
 
@@ -46,13 +46,13 @@ const navLinks = [
                 href="/login"
                 class="text-sm font-medium text-textMain/70 hover:text-textMain"
               >
-                Iniciar sesión
+                Anmelden
               </a>
               <a
                 href="/register"
                 class="text-sm font-medium text-white bg-accent hover:bg-accent/90 px-4 py-2 rounded-lg transition-colors shadow-sm"
               >
-                Registrarse
+                Registrieren
               </a>
             </>
           ) : (
@@ -60,7 +60,7 @@ const navLinks = [
               href="/dashboard"
               class="text-sm font-medium text-white bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2"
             >
-              Ir a mi Dashboard
+              Zum Dashboard
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </a>
           )}
