@@ -17,3 +17,7 @@ npm-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# CSV files
+mis_csv/
+importador.js
