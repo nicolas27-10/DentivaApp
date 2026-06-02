@@ -10,7 +10,7 @@ export default function EntrenamientoQuizPage({
   initialSize,
 }: EntrenamientoQuizPageProps) {
   return (
-    <div className="training-quiz-page mx-auto w-full max-w-3xl px-1 py-2 sm:px-0 sm:py-4">
+    <div className="training-quiz-page mx-auto w-full">
       <QuizComponent
         userId={userId}
         initialSize={initialSize}

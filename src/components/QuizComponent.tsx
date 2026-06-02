@@ -59,6 +59,14 @@ export default function QuizComponent({
 
   const requestedCount = testSize;
   const maxScore = totalPossiblePoints(questions);
+  const testTypeLabel =
+    requestedCount === 15
+      ? "Prueba rápida"
+      : requestedCount === 25
+        ? "Prueba estándar"
+        : requestedCount === 50
+          ? "Simulacro intensivo"
+          : "Evaluación adaptativa";
 
   const resetToMenu = useCallback(() => {
     setTestSize(0);
@@ -178,22 +186,28 @@ export default function QuizComponent({
   };
 
   return (
-    <div className="quiz-root mx-auto max-w-2xl space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      {showExitDuringFlow && (
+    <div className="quiz-root mx-auto max-w-full space-y-6 rounded-3xl border border-border/70 bg-white/70 p-6 shadow-[0_12px_32px_rgba(16,24,40,0.08)] backdrop-blur-sm sm:p-8">
+      {/* {showExitDuringFlow && (
         <div className="quiz-exam__toolbar flex justify-end">
           <button
             type="button"
-            className="quiz-exam__exit-dashboard rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            className="quiz-exam__exit-dashboard inline-flex items-center gap-2 rounded-full border border-transparent px-1 py-1 text-sm font-semibold text-textMain/60 transition hover:text-primary"
             onClick={handleExit}
           >
-            Volver al Dashboard
+            <span
+              aria-hidden
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E4F6FD] text-primary"
+            >
+              ←
+            </span>
+            <span className="pr-2">Volver</span>
           </button>
         </div>
-      )}
+      )} */}
 
       {loadError && (
         <p
-          className="quiz-error rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+          className="quiz-error rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
           role="alert"
         >
           {loadError}
@@ -203,10 +217,10 @@ export default function QuizComponent({
       {isLoading && (
         <div className="quiz-loading flex flex-col items-center justify-center gap-3 py-12">
           <div
-            className="quiz-loading__spinner h-10 w-10 animate-spin rounded-full border-2 border-slate-200 border-t-sky-600"
+            className="quiz-loading__spinner h-10 w-10 animate-spin rounded-full border-2 border-[#C8E8F5] border-t-primary"
             aria-hidden
           />
-          <p className="quiz-loading__text text-sm text-slate-600 dark:text-slate-400">
+          <p className="quiz-loading__text text-sm font-medium text-textMain/65">
             Preparando tu evaluación…
           </p>
         </div>
@@ -215,10 +229,10 @@ export default function QuizComponent({
       {showConfig && (
         <section className="quiz-config space-y-6">
           <header className="quiz-config__header text-center">
-            <h2 className="quiz-config__title text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="quiz-config__title text-2xl font-bold tracking-tight text-textMain sm:text-3xl">
               Evaluación adaptativa
             </h2>
-            <p className="quiz-config__subtitle mt-2 text-slate-600 dark:text-slate-400">
+            <p className="quiz-config__subtitle mt-2 text-sm text-textMain/65 sm:text-base">
               Elige la duración. Las preguntas se basan en los módulos que ya
               completaste.
             </p>
@@ -234,13 +248,13 @@ export default function QuizComponent({
               <button
                 key={size}
                 type="button"
-                className="quiz-config__btn rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-left transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-sky-600 dark:hover:bg-slate-800/80"
+                className="quiz-config__btn rounded-2xl border border-border bg-background px-4 py-4 text-left transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-[#E4F6FD] hover:shadow-sm"
                 onClick={() => void startQuiz(size)}
               >
-                <span className="quiz-config__btn-label block font-semibold text-slate-900 dark:text-white">
+                <span className="quiz-config__btn-label block font-semibold text-textMain">
                   {label}
                 </span>
-                <span className="quiz-config__btn-hint mt-1 block text-xs text-slate-500 dark:text-slate-400">
+                <span className="quiz-config__btn-hint mt-1 block text-xs uppercase tracking-wide text-textMain/50">
                   {hint}
                 </span>
               </button>
@@ -251,26 +265,43 @@ export default function QuizComponent({
 
       {showExam && currentQuestion && (
         <section className="quiz-exam space-y-6">
-          <div className="quiz-exam__progress flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <span className="quiz-exam__progress-label">
-              Pregunta{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
-                {currentIndex + 1}
-              </span>{" "}
-              de{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
-                {totalQuestions}
+          <header className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-widest text-textMain/50">
+              {testTypeLabel}
+            </p>
+            <h2 className="text-xl font-bold text-textMain sm:text-2xl">
+              Modo examen
+            </h2>
+          </header>
+
+          <div className="quiz-exam__progress rounded-2xl border border-primary/15 bg-gradient-to-r from-[#F4FBFF] to-[#EEF8FD] px-4 py-3">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-textMain/75">
+              <span className="quiz-exam__progress-label">
+                Pregunta{" "}
+                <span className="font-bold text-textMain">{currentIndex + 1}</span>{" "}
+                de <span className="font-bold text-textMain">{totalQuestions}</span>
               </span>
-            </span>
-            {requestedCount > totalQuestions && (
-              <span className="quiz-exam__progress-note text-xs text-amber-700 dark:text-amber-400">
-                Disponibles: {totalQuestions}
-              </span>
-            )}
+              {requestedCount > totalQuestions && (
+                <span className="quiz-exam__progress-note text-xs font-semibold text-amber-700">
+                  Disponibles: {totalQuestions}
+                </span>
+              )}
+            </div>
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/80 ring-1 ring-primary/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-[#67c3e7] transition-all duration-300"
+                style={{
+                  width: `${Math.max(
+                    0,
+                    Math.min(100, ((currentIndex + 1) / totalQuestions) * 100)
+                  )}%`,
+                }}
+              />
+            </div>
           </div>
 
-          <div className="quiz-exam__question rounded-xl bg-slate-50 px-4 py-4 dark:bg-slate-800/60">
-            <p className="quiz-exam__question-text text-base font-medium leading-relaxed text-slate-900 dark:text-slate-100">
+          <div className="quiz-exam__question rounded-2xl border border-border bg-background p-6 sm:p-7">
+            <p className="quiz-exam__question-text break-words text-base font-semibold leading-relaxed text-textMain sm:text-lg">
               {currentQuestion.question_text}
             </p>
           </div>
@@ -282,17 +313,17 @@ export default function QuizComponent({
               const showSolution = locked;
               const isCorrect = opt.is_correct;
               let stateClass =
-                "quiz-exam__option border-slate-200 bg-white hover:border-sky-300 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-sky-500";
+                "quiz-exam__option border-border bg-background text-textMain hover:border-primary/45 hover:bg-[#E4F6FD]";
               if (showSolution) {
                 if (isCorrect) {
                   stateClass =
-                    "quiz-exam__option quiz-exam__option--correct border-emerald-500 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-950/40";
+                    "quiz-exam__option quiz-exam__option--correct border-emerald-400 bg-emerald-50 text-emerald-700";
                 } else if (isSelected && !isCorrect) {
                   stateClass =
-                    "quiz-exam__option quiz-exam__option--incorrect border-red-500 bg-red-50 dark:border-red-600 dark:bg-red-950/40";
+                    "quiz-exam__option quiz-exam__option--incorrect border-red-400 bg-red-50 text-red-700";
                 } else {
                   stateClass =
-                    "quiz-exam__option border-slate-200 bg-slate-50 opacity-70 dark:border-slate-700 dark:bg-slate-800/80";
+                    "quiz-exam__option border-border bg-background text-textMain/60 opacity-75";
                 }
               }
 
@@ -301,7 +332,7 @@ export default function QuizComponent({
                   <button
                     type="button"
                     disabled={locked}
-                    className={`quiz-exam__option w-full rounded-xl border-2 px-4 py-3 text-left text-sm transition disabled:cursor-default ${stateClass}`}
+                    className={`quiz-exam__option w-full rounded-2xl border-2 px-4 py-3 text-left text-sm transition disabled:cursor-default ${stateClass}`}
                     onClick={() => handleSelectOption(opt.id)}
                   >
                     {opt.option_text}
@@ -313,17 +344,9 @@ export default function QuizComponent({
 
           {selectedAnswer !== null && (
             <div className="quiz-exam__feedback space-y-4">
-              <div className="quiz-exam__explanation rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <p className="quiz-exam__explanation-label mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Explicación
-                </p>
-                <p className="quiz-exam__explanation-text">
-                  {currentQuestion.explanation}
-                </p>
-              </div>
               <button
                 type="button"
-                className="quiz-exam__next w-full rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700"
+                className="quiz-exam__next w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#3a9bc4]"
                 onClick={handleNext}
               >
                 {currentIndex >= totalQuestions - 1 ? "Ver resultados" : "Siguiente"}
@@ -335,25 +358,25 @@ export default function QuizComponent({
 
       {showResults && (
         <section className="quiz-results space-y-6 text-center">
-          <h2 className="quiz-results__title text-2xl font-bold text-slate-900 dark:text-white">
+          <h2 className="quiz-results__title text-2xl font-bold text-textMain sm:text-3xl">
             Resultados
           </h2>
-          <div className="quiz-results__stats space-y-2 rounded-xl border border-slate-200 bg-slate-50 px-6 py-8 dark:border-slate-600 dark:bg-slate-800/60">
-            <p className="quiz-results__score text-lg text-slate-700 dark:text-slate-300">
+          <div className="quiz-results__stats space-y-2 rounded-2xl border border-border bg-background px-6 py-8">
+            <p className="quiz-results__score text-lg text-textMain/80">
               Puntuación:{" "}
-              <span className="font-bold text-sky-600 dark:text-sky-400">
+              <span className="font-bold text-primary">
                 {score}
               </span>
               {maxScore > 0 && (
-                <span className="text-slate-500 dark:text-slate-400">
+                <span className="text-textMain/55">
                   {" "}
                   / {maxScore}
                 </span>
               )}
             </p>
-            <p className="quiz-results__percent text-3xl font-bold text-slate-900 dark:text-white">
+            <p className="quiz-results__percent text-3xl font-bold text-textMain">
               {accuracyPercent}%
-              <span className="quiz-results__percent-label ml-2 text-base font-normal text-slate-500 dark:text-slate-400">
+              <span className="quiz-results__percent-label ml-2 text-base font-normal text-textMain/55">
                 de aciertos ({correctAnswersCount}/{totalQuestions})
               </span>
             </p>
@@ -361,7 +384,7 @@ export default function QuizComponent({
           <div className="quiz-results__actions flex flex-col gap-3">
             <button
               type="button"
-              className="quiz-results__retry w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-400 hover:bg-sky-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-sky-500"
+              className="quiz-results__retry w-full rounded-2xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold text-textMain transition hover:border-primary/45 hover:bg-[#E4F6FD]"
               onClick={handleRetry}
             >
               Volver a intentar
@@ -369,7 +392,7 @@ export default function QuizComponent({
             {onRequestExit && (
               <button
                 type="button"
-                className="quiz-results__exit-dashboard text-sm font-medium text-slate-500 underline-offset-2 hover:text-slate-800 hover:underline dark:text-slate-400 dark:hover:text-slate-200"
+                className="quiz-results__exit-dashboard text-sm font-semibold text-textMain/60 underline-offset-2 transition hover:text-primary hover:underline"
                 onClick={handleExit}
               >
                 Volver al Dashboard

@@ -46,15 +46,13 @@ const titles: Record<QuizInitialSize, string> = {
       >
         ← Volver al centro de entrenamiento
       </a>
-      <h1 id="training-quiz-heading" class="mt-3 text-2xl font-bold text-textMain">
+      <!-- <h1 id="training-quiz-heading" class="mt-3 text-2xl font-bold text-textMain">
         {titles[initialSize]}
       </h1>
       <p class="mt-1 text-sm text-textMain/65">
         Modo examen a pantalla completa. Buena suerte.
-      </p>
+      </p> -->
     </div>
-    <div class="rounded-2xl border border-border bg-card/80 p-4 shadow-sm sm:p-6 md:p-8">
-      <EntrenamientoQuizPage client:load userId={userId} initialSize={initialSize} />
-    </div>
+    <EntrenamientoQuizPage client:load userId={userId} initialSize={initialSize} />
   </section>
 </DashboardLayout>
