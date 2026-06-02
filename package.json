@@ -7,7 +7,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "import:csv": "node importador.js",
+    "import:csv:dry": "node importador.js --dry-run"
   },
   "dependencies": {
     "@astrojs/netlify": "^7.0.4",
@@ -17,6 +19,8 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "^6.0.8",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^16.6.1",
     "lucide-react": "^1.9.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
