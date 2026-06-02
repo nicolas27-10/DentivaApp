@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 export const POST: APIRoute = async ({ request }) => {
   try {
     // 1. INICIALIZAMOS ADENTRO DE LA PETICIÓN
-    // Leemos de import.meta.env (Astro) y si falla, de process.env (Node)
     const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
     const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -13,7 +12,6 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'Falta configuración en el servidor' }), { status: 500 });
     }
 
-    // Creamos el cliente de forma segura porque ya verificamos que las llaves existen
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     // 2. PROCESAMOS LOS DATOS
@@ -59,10 +57,12 @@ export const POST: APIRoute = async ({ request }) => {
     if (lessonData?.module_id) {
       const moduleId = lessonData.module_id;
 
+      // 👇 AQUÍ ESTÁ LA CORRECCIÓN CLAVE 👇
       const { data: moduleExercises } = await supabaseAdmin
         .from('exercises')
         .select('id, lessons!inner(module_id)')
-        .eq('lessons.module_id', moduleId);
+        .eq('lessons.module_id', moduleId)
+        .neq('type', 'multiple_choice'); // Excluimos los miles de ejercicios masivos
 
       if (moduleExercises && moduleExercises.length > 0) {
         const totalEx = moduleExercises.length;
@@ -75,6 +75,8 @@ export const POST: APIRoute = async ({ request }) => {
           .in('exercise_id', exIds);
 
         const uniqueCompleted = new Set(userAttempts?.map(a => a.exercise_id)).size;
+        
+        // Calculamos el porcentaje sobre la base real (ej: 5 de 5 = 100%)
         const percentage = Math.round((uniqueCompleted / totalEx) * 100);
         const isCompleted = percentage >= 100;
 

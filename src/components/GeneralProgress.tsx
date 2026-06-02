@@ -15,11 +15,12 @@ export default function GeneralProgress({ userId, accessToken }: { userId: strin
                     { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
                 );
 
-                // 2. Pedimos el total de ejercicios (Solo Lernen)
+                // 2. Pedimos el total de ejercicios (Solo Lernen, excluyendo las miles de preguntas importadas)
                 const { count: totalExercises, error: errorTotal } = await supabase
                     .from("exercises")
                     .select("*", { count: "exact", head: true })
-                    .eq("is_assessment", false);
+                    .eq("is_assessment", false)
+                    .neq("type", "multiple_choice"); // 👈 ¡CORRECCIÓN 1!
 
                 if (errorTotal) console.error("🛑 Error pidiendo total de ejercicios:", errorTotal);
 
@@ -27,7 +28,8 @@ export default function GeneralProgress({ userId, accessToken }: { userId: strin
                 const { data: lernenExercises } = await supabase
                     .from("exercises")
                     .select("id")
-                    .eq("is_assessment", false);
+                    .eq("is_assessment", false)
+                    .neq("type", "multiple_choice"); // 👈 ¡CORRECCIÓN 2!
 
                 const lernenExerciseIds = lernenExercises?.map(e => e.id) || [];
 
