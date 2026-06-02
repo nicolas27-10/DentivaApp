@@ -1,7 +1,7 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import VerticalQuiz from "../../components/VerticalQuiz"; 
-import PdfViewer from "../../components/PdfViewer"; // 👈 IMPORTAMOS EL NUEVO COMPONENTE
+import PdfViewer from "../../components/PdfViewer"; 
 import { supabase } from "../../lib/supabaseClient";
 import { getSession } from '@/lib/auth';
 
@@ -46,7 +46,7 @@ const studyImages = files
     return supabase.storage.from('study_materials').getPublicUrl(`${id}/${file.name}`).data.publicUrl;
   }) || [];
 
-// 3. Obtener los ejercicios
+// 3. Obtener los ejercicios (¡AQUÍ ESTÁ LA MAGIA DEL FILTRO!)
 const { data: exercises, error: exercisesError } = await supabase
   .from("exercises")
   .select(`
@@ -62,6 +62,7 @@ const { data: exercises, error: exercisesError } = await supabase
     )
   `)
   .eq("lesson_id", id)
+  .neq("type", "multiple_choice") // 👈 Excluye las miles de preguntas nuevas
   .order("order_index")
   .setHeader('Authorization', `Bearer ${token}`);
 

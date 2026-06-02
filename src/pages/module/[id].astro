@@ -48,6 +48,7 @@ const { data: allExercises } = await supabase
   .from("exercises")
   .select("id, lesson_id")
   .in("lesson_id", lessonIds)
+  .neq("type", "multiple_choice") // 👈 ¡AQUÍ ESTÁ LA CORRECCIÓN! Ignoramos el import masivo
   .setHeader('Authorization', `Bearer ${token}`);
 
 // 5. Obtener los intentos del usuario (¡Con Token!)
@@ -91,8 +92,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
       </svg>
       {moduleData.title}
     </h1>
-    <!-- <p class="text-textMain/70 text-lg">{moduleData.description}</p> -->
-  </div>
+    </div>
 
   <h2 class="text-2xl font-bold mb-6 text-textMain">Lehren aus diesem Modul</h2>
 
