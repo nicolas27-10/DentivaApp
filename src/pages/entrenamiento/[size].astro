@@ -1,0 +1,60 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import EntrenamientoQuizPage from '@/components/EntrenamientoQuizPage';
+import { supabase } from '@/lib/supabaseClient';
+import type { QuizInitialSize } from '@/components/QuizComponent';
+
+const accessToken = Astro.cookies.get('sb-access-token');
+const refreshToken = Astro.cookies.get('sb-refresh-token');
+
+if (!accessToken || !refreshToken) {
+  return Astro.redirect('/login');
+}
+
+const { data: authData, error: authError } = await supabase.auth.getUser(accessToken.value);
+if (authError || !authData?.user) {
+  Astro.cookies.delete('sb-access-token', { path: '/' });
+  Astro.cookies.delete('sb-refresh-token', { path: '/' });
+  return Astro.redirect('/login');
+}
+
+const raw = Astro.params.size ?? '';
+const n = Number(raw);
+function isQuizInitialSize(x: number): x is QuizInitialSize {
+  return x === 15 || x === 25 || x === 50;
+}
+if (!isQuizInitialSize(n)) {
+  return Astro.redirect('/dashboard#entrenamiento');
+}
+
+const initialSize = n;
+const userId = authData.user.id;
+
+const titles: Record<QuizInitialSize, string> = {
+  15: 'Prueba rápida',
+  25: 'Prueba estándar',
+  50: 'Simulacro intensivo',
+};
+---
+
+<DashboardLayout title={`${titles[initialSize]} — Dentiva`}>
+  <section class="min-h-[70vh] scroll-mt-24" aria-labelledby="training-quiz-heading">
+    <div class="mb-6">
+      <a
+        href="/dashboard#entrenamiento"
+        class="text-sm font-medium text-primary hover:text-[#3a9bc4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        ← Volver al centro de entrenamiento
+      </a>
+      <h1 id="training-quiz-heading" class="mt-3 text-2xl font-bold text-textMain">
+        {titles[initialSize]}
+      </h1>
+      <p class="mt-1 text-sm text-textMain/65">
+        Modo examen a pantalla completa. Buena suerte.
+      </p>
+    </div>
+    <div class="rounded-2xl border border-border bg-card/80 p-4 shadow-sm sm:p-6 md:p-8">
+      <EntrenamientoQuizPage client:load userId={userId} initialSize={initialSize} />
+    </div>
+  </section>
+</DashboardLayout>

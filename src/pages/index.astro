@@ -10,8 +10,8 @@ import LeaderboardTable from '@/components/LeaderboardTable.astro';
   <Hero />
   <Features />
   <section id="leaderboard" class="py-16 px-4 scroll-m-16">
-    <div class="container mx-auto max-w-4xl text-center">
-      <h2 class="text-3xl font-bold text-textMain mb-4">
+    <!-- <div class="container mx-auto max-w-4xl text-center">
+      <!-- <h2 class="text-3xl font-bold text-textMain mb-4">
         Únete a nuestra comunidad activa 🏆
       </h2>
       <p class="text-textMain/70 mb-10 max-w-2xl mx-auto">
@@ -21,22 +21,22 @@ import LeaderboardTable from '@/components/LeaderboardTable.astro';
       {/* Tu componente de tabla */}
       <LeaderboardTable />
       
-    </div>
+    </div> -->
+    <PricingTable />
   </section>
-  <PricingTable />
   <section class="py-20 px-4 bg-accent text-white">
     <div class="container mx-auto max-w-3xl text-center">
       <h2 class="text-2xl font-bold mb-4">
-        ¿Listo para empezar?
+        Bereit loszulegen?
       </h2>
       <p class="mb-8 text-background/80">
-        Regístrate gratis y accede a material de muestra. Desbloquea todo el contenido con una suscripción.
+        Registriere dich kostenlos und erhalte Zugriff auf unsere Probematerialien. Schalte alle Inhalte mit einem Abonnement frei.
       </p>
       <a
         href="/register"
         class="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-accent bg-card hover:bg-background rounded-lg transition-colors"
       >
-        Crear cuenta gratuita
+        Kostenloses Konto erstellen
       </a>
     </div>
   </section>
