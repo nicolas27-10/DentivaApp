@@ -1,0 +1,70 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+---
+
+<MainLayout title="Impressum — Dentiva">
+  <article class="px-4 py-16 sm:py-20">
+    <div class="container mx-auto max-w-3xl">
+      <header class="mb-10 border-b border-border pb-8">
+        <p class="text-xs font-semibold uppercase tracking-widest text-primary">Rechtliche Hinweise</p>
+        <h1 class="mt-2 text-3xl font-bold text-textMain sm:text-4xl">Impressum</h1>
+      </header>
+
+      <div class="legal-prose space-y-8 text-textMain/85 leading-relaxed">
+        <section>
+          <h2 class="text-lg font-semibold text-textMain">Angaben gemäß § 5 TMG</h2>
+          <p class="mt-3">
+            <strong class="text-textMain">Dentiva</strong><br />
+            Inhaberin: Daniela Tapia<br />
+            [CALLE Y NÚMERO]<br />
+            [CÓDIGO POSTAL] Heidelberg, Deutschland
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold text-textMain">Kontakt</h2>
+          <ul class="mt-3 list-none space-y-1">
+            <li>
+              E-Mail:{' '}
+              <a href="mailto:contact@dentivaapp.com" class="text-primary hover:underline">
+                contact@dentivaapp.com
+              </a>
+            </li>
+            <li>Telefon: [NÚMERO DE TELÉFONO]</li>
+            <li>
+              Website:{' '}
+              <a href="https://dentivaapp.com" class="text-primary hover:underline" rel="noopener noreferrer">
+                https://dentivaapp.com
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold text-textMain">
+            Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+          </h2>
+          <p class="mt-3">Daniela Tapia</p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold text-textMain">Haftung für Inhalte</h2>
+          <p class="mt-3">
+            Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit,
+            Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.
+          </p>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold text-textMain">Urheberrecht</h2>
+          <p class="mt-3">
+            Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen
+            dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der
+            Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung
+            des jeweiligen Autors bzw. Erstellers.
+          </p>
+        </section>
+      </div>
+    </div>
+  </article>
+</MainLayout>
