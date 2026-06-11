@@ -33,7 +33,16 @@ const currentYear = new Date().getFullYear();
 
     </div>
     
-    <div class="mt-8 pt-8 border-t border-border text-center text-sm text-textMain/60">
+    <nav
+      class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-textMain/55"
+      aria-label="Rechtliche Hinweise"
+    >
+      <a href="/impressum" class="hover:text-primary transition-colors">Impressum</a>
+      <a href="/datenschutz" class="hover:text-primary transition-colors">Datenschutz</a>
+      <a href="/agb" class="hover:text-primary transition-colors">AGB</a>
+    </nav>
+
+    <div class="mt-4 pt-6 border-t border-border text-center text-sm text-textMain/60">
       © {currentYear} DentivaApp. Plataforma educativa.
     </div>
   </div>
