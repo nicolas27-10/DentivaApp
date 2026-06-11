@@ -28,38 +28,17 @@ if (authError || !authData?.user) {
 const user = authData.user;
 const userId = user.id;
 
-// 1. Obtener perfil con estado Premium actualizado
+// 1. Obtener perfil para los datos visuales de bienvenida (Nombre y Puntos FSP)
 const { data: profile } = await supabase
   .from('profiles')
-  .select('is_premium, total_fsp_points, first_name')
+  .select('total_fsp_points, first_name')
   .eq('id', userId)
   .single();
 
-const isPremium = profile?.is_premium || false;
+// 2. Obtener módulos (La función getModulesWithProgress YA se encarga de revisar si es Premium y bloquear)
+const modules = await getModulesWithProgress(userId, Astro.cookies);
 
-// 2. Obtener módulos y progreso base
-const rawModules = await getModulesWithProgress(userId, Astro.cookies);
-
-// 3. Lógica de negocio corregida:
-const modules = rawModules.map((mod, index) => {
-    // Si el usuario es Premium, eliminamos cualquier bloqueo que sea por suscripción
-    if (isPremium && mod.lockReason === 'subscription_required') {
-        return { ...mod, isLocked: false, lockReason: null };
-    }
-
-    // Si NO es premium y es módulo 3+, aplicamos el bloqueo dorado
-    // Pero OJO: Si ya está bloqueado por progreso (gris), respetamos el gris
-    if (index >= 1 && !isPremium && mod.lockReason !== 'previous_incomplete') {
-        return {
-            ...mod,
-            isLocked: true,
-            lockReason: 'subscription_required'
-        };
-    }
-    
-    return mod;
-});
-
+// 3. Preparar variables para la UI
 const firstName = profile?.first_name || 'Student';
 const fspPercentage = Math.min(Math.round((profile?.total_fsp_points || 0) / 10), 100); 
 ---

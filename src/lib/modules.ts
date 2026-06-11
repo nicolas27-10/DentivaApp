@@ -28,7 +28,20 @@ export async function getModulesWithProgress(userId: string | undefined, cookies
     return [];
   }
 
-  const hasSubscription = false; 
+  // 👇 AQUÍ ESTÁ LA NUEVA LÓGICA DE SUSCRIPCIÓN 👇
+  let hasSubscription = false;
+  if (userId) {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", userId)
+      .single()
+      .setHeader('Authorization', `Bearer ${token}`);
+      
+    if (!profileError && profile) {
+      hasSubscription = profile.is_premium === true || profile.is_premium === 'true';
+    }
+  }
 
   console.log("--- INICIANDO REVISIÓN DE MÓDULOS ---");
 
