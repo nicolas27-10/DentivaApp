@@ -12,9 +12,9 @@ const MODES: {
 }[] = [
   {
     size: 15,
-    title: "Prueba rápida",
-    subtitle: "15 preguntas",
-    description: "Ideal para un repaso veloz entre pacientes.",
+    title: "Schnelltest",
+    subtitle: "15 Fragen",
+    description: "Ideal für eine schnelle Wiederholung zwischen Patienten.",
     icon: Zap,
     accentClass: "text-amber-600 group-hover:text-amber-700",
     iconWrapClass:
@@ -22,9 +22,9 @@ const MODES: {
   },
   {
     size: 25,
-    title: "Prueba estándar",
-    subtitle: "25 preguntas",
-    description: "El formato más equilibrado para tu estudio.",
+    title: "Standardtest",
+    subtitle: "25 Fragen",
+    description: "Das ausgewogenste Format für dein Lernen.",
     icon: BookOpen,
     accentClass: "text-primary group-hover:text-[#3a9bc4]",
     iconWrapClass:
@@ -32,9 +32,9 @@ const MODES: {
   },
   {
     size: 50,
-    title: "Simulacro intensivo",
-    subtitle: "50 preguntas",
-    description: "Pon a prueba tu resistencia y conocimiento global.",
+    title: "Intensivsimulation",
+    subtitle: "50 Fragen",
+    description: "Teste deine Ausdauer und dein Gesamtwissen.",
     icon: Crown,
     accentClass: "text-violet-600 group-hover:text-violet-700",
     iconWrapClass:
@@ -55,11 +55,11 @@ export default function DashboardTrainingSection() {
             id="dashboard-training-heading"
             className="text-lg font-semibold text-textMain uppercase tracking-widest"
           >
-            Centro de entrenamiento
+            Trainingszentrum
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-textMain/65">
-            Práctica diaria con preguntas adaptadas a los módulos que ya
-            completaste. Elige la intensidad y entra al modo examen.
+            Tägliches Üben mit Fragen aus den Modulen, die du bereits
+            abgeschlossen hast. Wähle die Intensität und starte den Prüfungsmodus.
           </p>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function DashboardTrainingSection() {
               <span
                 className={`mt-5 text-sm font-semibold ${accentClass} transition`}
               >
-                Comenzar →
+                Starten →
               </span>
             </a>
           )

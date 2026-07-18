@@ -8,8 +8,8 @@ interface Props {
 }
 
 const {
-  question = 'Pregunta de ejemplo (placeholder)',
-  options = ['Opción A', 'Opción B', 'Opción C', 'Opción D'],
+  question = 'Beispielfrage (Platzhalter)',
+  options = ['Option A', 'Option B', 'Option C', 'Option D'],
   questionIndex = 1,
   totalQuestions = 10,
 } = Astro.props;
@@ -17,7 +17,7 @@ const {
 
 <div class="bg-card rounded-lg border border-border p-6 shadow-sm">
   <div class="text-sm text-textMain/60 mb-4">
-    Pregunta {questionIndex} de {totalQuestions}
+    Frage {questionIndex} von {totalQuestions}
   </div>
   <p class="text-lg font-medium text-textMain mb-6">{question}</p>
   <ul class="space-y-3">
@@ -33,6 +33,6 @@ const {
     ))}
   </ul>
   <p class="text-xs text-textMain/50 mt-4 italic">
-    [Placeholder: la lógica del quiz se implementará posteriormente]
+    [Platzhalter: Die Quiz-Logik wird später implementiert]
   </p>
 </div>

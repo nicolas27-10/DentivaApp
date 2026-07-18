@@ -31,9 +31,9 @@ const initialSize = n;
 const userId = authData.user.id;
 
 const titles: Record<QuizInitialSize, string> = {
-  15: 'Prueba rápida',
-  25: 'Prueba estándar',
-  50: 'Simulacro intensivo',
+  15: 'Schnelltest',
+  25: 'Standardtest',
+  50: 'Intensivsimulation',
 };
 ---
 
@@ -44,13 +44,13 @@ const titles: Record<QuizInitialSize, string> = {
         href="/dashboard#entrenamiento"
         class="text-sm font-medium text-primary hover:text-[#3a9bc4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        ← Volver al centro de entrenamiento
+        ← Zurück zum Trainingszentrum
       </a>
       <!-- <h1 id="training-quiz-heading" class="mt-3 text-2xl font-bold text-textMain">
         {titles[initialSize]}
       </h1>
       <p class="mt-1 text-sm text-textMain/65">
-        Modo examen a pantalla completa. Buena suerte.
+        Vollbild-Prüfungsmodus. Viel Erfolg.
       </p> -->
     </div>
     <EntrenamientoQuizPage client:load userId={userId} initialSize={initialSize} />

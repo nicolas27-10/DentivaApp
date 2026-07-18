@@ -12,7 +12,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader?.replace("Bearer ", ""));
 
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Debes iniciar sesión para suscribirte" }), { status: 401 });
+      return new Response(JSON.stringify({ error: "Du musst angemeldet sein, um ein Abo abzuschließen" }), { status: 401 });
     }
 
     // 2. Crear la sesión de Stripe

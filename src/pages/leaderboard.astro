@@ -9,12 +9,12 @@ const session = await getSession(Astro.cookies);
 // TODO: Leaderboard system - fetch from Supabase, filter by week
 ---
 
-<MainLayout title="Clasificación - Dentiva">
+<MainLayout title="Rangliste - Dentiva">
   <section class="py-16 px-4">
     <div class="container mx-auto max-w-4xl">
-      <h1 class="text-3xl font-bold text-textMain mb-2">Clasificación semanal</h1>
+      <h1 class="text-3xl font-bold text-textMain mb-2">Wöchentliche Rangliste</h1>
       <p class="text-textMain/70 mb-8">
-        Top 10 de la semana. ¡Participa completando quizzes para subir posiciones!
+        Top 10 der Woche. Steige in der Rangliste auf, indem du Quizze absolvierst!
       </p>
       <LeaderboardTable />
     </div>

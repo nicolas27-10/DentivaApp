@@ -16,18 +16,18 @@ const currentYear = new Date().getFullYear();
       </a>
       
       <div class="flex flex-wrap justify-center gap-6 md:gap-8 text-sm text-textMain/70 font-medium">
-        <a href="/" class="hover:text-primary transition-colors">Inicio</a>
-        <a href="/pricing" class="hover:text-primary transition-colors">Precios</a>
-        <a href="/leaderboard" class="hover:text-primary transition-colors">Clasificación</a>
+        <a href="/" class="hover:text-primary transition-colors">Startseite</a>
+        <a href="/pricing" class="hover:text-primary transition-colors">Preise</a>
+        <a href="/leaderboard" class="hover:text-primary transition-colors">Rangliste</a>
         
         {/* Lógica condicional: Si NO hay usuario, muestra Login/Registro. Si SÍ hay, muestra Dashboard */}
         {!user ? (
           <>
-            <a href="/login" class="hover:text-primary transition-colors">Iniciar sesión</a>
-            <a href="/register" class="hover:text-primary transition-colors">Registrarse</a>
+            <a href="/login" class="hover:text-primary transition-colors">Anmelden</a>
+            <a href="/register" class="hover:text-primary transition-colors">Registrieren</a>
           </>
         ) : (
-          <a href="/dashboard" class="hover:text-primary transition-colors">Mi Dashboard</a>
+          <a href="/dashboard" class="hover:text-primary transition-colors">Mein Dashboard</a>
         )}
       </div>
 
@@ -43,7 +43,7 @@ const currentYear = new Date().getFullYear();
     </nav>
 
     <div class="mt-4 pt-6 border-t border-border text-center text-sm text-textMain/60">
-      © {currentYear} DentivaApp. Plataforma educativa.
+      © {currentYear} DentivaApp. Bildungsplattform.
     </div>
   </div>
 </footer>

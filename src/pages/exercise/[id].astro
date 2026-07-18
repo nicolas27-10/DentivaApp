@@ -57,7 +57,7 @@ const { data: nextEx } = await supabase
 const nextExerciseId = nextEx?.id || null;
 ---
 
-<DashboardLayout title="Estudio">
+<DashboardLayout title="Lernen">
   
   <div 
     id="exercise-container" 
@@ -71,13 +71,13 @@ const nextExerciseId = nextEx?.id || null;
 
     <div class="mb-6">
       <a href={`/lesson/${exercise.lesson_id}`} class="text-primary hover:underline text-sm font-medium">
-        &larr; Volver a la lección
+        &larr; Zurück zur Lektion
       </a>
     </div>
 
     <div class="mb-6 flex items-center justify-between">
       <span class="text-sm font-bold text-textMain/50 uppercase tracking-wider">
-        {exercise.type === 'multiple_choice' ? 'Test de Práctica' : 'Flashcard'}
+        {exercise.type === 'multiple_choice' ? 'Übungstest' : 'Karteikarte'}
       </span>
     </div>
 
@@ -101,12 +101,12 @@ const nextExerciseId = nextEx?.id || null;
       {/* RENDER CONDICIONAL: Si es Flashcard */}
       {exercise.type === 'flashcard' && (
         <div class="p-8 border-2 border-dashed border-border rounded-xl text-center bg-card mb-4">
-          <p class="text-textMain/70 italic mb-4">Piensa en la respuesta o definición...</p>
+          <p class="text-textMain/70 italic mb-4">Denke an die Antwort oder Definition...</p>
         </div>
       )}
 
       <div id="explanation-box" class="hidden mt-6 p-5 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg text-blue-900">
-        <h4 class="font-bold mb-1">Explicación:</h4>
+        <h4 class="font-bold mb-1">Erläuterung:</h4>
         <p id="explanation-text"></p>
       </div>
 
@@ -116,7 +116,7 @@ const nextExerciseId = nextEx?.id || null;
           id="submit-answer"
           class="bg-primary text-white font-bold px-8 py-3 rounded-xl hover:bg-primary/90 transition-all shadow-md"
         >
-          {exercise.type === 'multiple_choice' ? 'Comprobar Respuesta' : 'Ver Respuesta'}
+          {exercise.type === 'multiple_choice' ? 'Antwort prüfen' : 'Antwort anzeigen'}
         </button>
         <div id="exercise-navigation"></div>
       </div>
@@ -145,7 +145,7 @@ const nextExerciseId = nextEx?.id || null;
     if (type === 'multiple_choice') {
       const selected = document.querySelector('input[name="answer"]:checked');
       if (!(selected instanceof HTMLInputElement)) {
-        alert("Por favor, selecciona una opción.");
+        alert("Bitte wähle eine Option aus.");
         return;
       }
       optionId = selected.value;
@@ -154,7 +154,7 @@ const nextExerciseId = nextEx?.id || null;
     // Estado de carga
     button.disabled = true;
     const originalText = button.textContent;
-    button.textContent = "Revisando...";
+    button.textContent = "Wird überprüft...";
 
     try {
       // Llamada a la API unificada
@@ -200,14 +200,14 @@ const nextExerciseId = nextEx?.id || null;
           // Si hay siguiente ejercicio, vamos a él
           nav.innerHTML = `
             <a href="/exercise/${nextId}" class="inline-block bg-accent text-white font-bold px-8 py-3 rounded-xl hover:bg-accent/90 transition-transform hover:-translate-y-1 shadow-md">
-              Siguiente →
+              Weiter →
             </a>
           `;
         } else {
           // Si no hay más, volvemos al Lobby de la lección (que ahora calculará el 100%)
           nav.innerHTML = `
             <a href="/lesson/${lessonId}" class="inline-block bg-green-500 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-600 transition-transform hover:-translate-y-1 shadow-md">
-              Finalizar Lección ✅
+              Lektion abschließen ✅
             </a>
           `;
         }
@@ -215,7 +215,7 @@ const nextExerciseId = nextEx?.id || null;
 
     } catch (error) {
       console.error(error);
-      alert("Hubo un error al guardar tu respuesta.");
+      alert("Beim Speichern deiner Antwort ist ein Fehler aufgetreten.");
       button.disabled = false;
       button.textContent = originalText;
     }

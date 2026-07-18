@@ -82,7 +82,7 @@ export default function GeneralProgress({ userId, accessToken }: { userId: strin
                     Lernen
                 </span>
                 <span className="text-[#1B8BB9] font-bold">
-                    {isLoading ? "Cargando..." : `${porcentaje}%`}
+                    {isLoading ? "Wird geladen..." : `${porcentaje}%`}
                 </span>
             </div>
 

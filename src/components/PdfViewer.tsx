@@ -54,7 +54,7 @@ export default function PdfViewer({ images, title }: PdfViewerProps) {
             <img 
               key={index}
               src={imgUrl} 
-              alt={`Página ${index + 1} de ${title}`} 
+              alt={`Seite ${index + 1} von ${title}`} 
               className="w-full h-auto rounded-md shadow-sm pointer-events-none select-none"
               // Ahora sí React escuchará cada imagen perfectamente
               onLoad={() => setLoadedImagesCount(prev => prev + 1)}

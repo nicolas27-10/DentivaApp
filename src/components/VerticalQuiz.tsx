@@ -185,7 +185,7 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId }: 
               )}
 
               {exercise.type === 'flashcard' && !isAnswered && (
-                <button onClick={() => handleFlashcardComplete(exercise.id)} className="w-full bg-indigo-50 text-indigo-700 font-bold py-3 rounded-lg border-2 border-indigo-200">Girar carta / Entendido</button>
+                <button onClick={() => handleFlashcardComplete(exercise.id)} className="w-full bg-indigo-50 text-indigo-700 font-bold py-3 rounded-lg border-2 border-indigo-200">Karte umdrehen / Verstanden</button>
               )}
 
               {isAnswered && exercise.explanation && (

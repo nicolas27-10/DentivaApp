@@ -20,14 +20,14 @@ if (Astro.request.method === 'POST') {
     !contentType.includes('application/x-www-form-urlencoded') &&
     !contentType.includes('multipart/form-data')
   ) {
-    errorMessage = 'Das Formular konnte nicht verarbeitet werden (Content-Type inválido).';
+    errorMessage = 'Das Formular konnte nicht verarbeitet werden (ungültiger Content-Type).';
   } else {
     const formData = await Astro.request.formData();
     const { error } = await signIn(formData, Astro.cookies);
     if (error) {
       errorMessage = error.message ?? 'Wir konnten uns nicht einloggen.';
     } else {
-      successMessage = 'Inicio de sesión exitoso.';
+      successMessage = 'Anmeldung erfolgreich.';
       return Astro.redirect('/dashboard')
     }
   }

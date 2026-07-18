@@ -61,12 +61,12 @@ export default function QuizComponent({
   const maxScore = totalPossiblePoints(questions);
   const testTypeLabel =
     requestedCount === 15
-      ? "Prueba rápida"
+      ? "Schnelltest"
       : requestedCount === 25
-        ? "Prueba estándar"
+        ? "Standardtest"
         : requestedCount === 50
-          ? "Simulacro intensivo"
-          : "Evaluación adaptativa";
+          ? "Intensivsimulation"
+          : "Adaptive Bewertung";
 
   const resetToMenu = useCallback(() => {
     setTestSize(0);
@@ -100,7 +100,7 @@ export default function QuizComponent({
 
         if (error) {
           console.error("[QuizComponent] RPC generate_random_quiz:", error);
-          setLoadError(error.message || "No se pudo cargar el cuestionario.");
+          setLoadError(error.message || "Der Fragebogen konnte nicht geladen werden.");
           setTestSize(0);
           return;
         }
@@ -111,7 +111,7 @@ export default function QuizComponent({
             "[QuizComponent] generate_random_quiz devolvió 0 preguntas."
           );
           setLoadError(
-            "No hay preguntas disponibles con los módulos completados."
+            "Keine Fragen verfügbar für die abgeschlossenen Module."
           );
           setTestSize(0);
           return;
@@ -120,7 +120,7 @@ export default function QuizComponent({
         setQuestions(list);
       } catch (e) {
         console.error("[QuizComponent] startQuiz:", e);
-        setLoadError("Error inesperado al cargar el cuestionario.");
+        setLoadError("Unerwarteter Fehler beim Laden des Fragebogens.");
         setTestSize(0);
       } finally {
         setIsLoading(false);
@@ -200,7 +200,7 @@ export default function QuizComponent({
             >
               ←
             </span>
-            <span className="pr-2">Volver</span>
+            <span className="pr-2">Zurück</span>
           </button>
         </div>
       )} */}
@@ -221,7 +221,7 @@ export default function QuizComponent({
             aria-hidden
           />
           <p className="quiz-loading__text text-sm font-medium text-textMain/65">
-            Preparando tu evaluación…
+            Deine Bewertung wird vorbereitet…
           </p>
         </div>
       )}
@@ -230,19 +230,19 @@ export default function QuizComponent({
         <section className="quiz-config space-y-6">
           <header className="quiz-config__header text-center">
             <h2 className="quiz-config__title text-2xl font-bold tracking-tight text-textMain sm:text-3xl">
-              Evaluación adaptativa
+              Adaptive Bewertung
             </h2>
             <p className="quiz-config__subtitle mt-2 text-sm text-textMain/65 sm:text-base">
-              Elige la duración. Las preguntas se basan en los módulos que ya
-              completaste.
+              Wähle die Dauer. Die Fragen basieren auf den Modulen, die du bereits
+              abgeschlossen hast.
             </p>
           </header>
           <div className="quiz-config__actions grid gap-3 sm:grid-cols-3">
             {(
               [
-                { size: 15 as const, label: "Corta", hint: "15 preguntas" },
-                { size: 25 as const, label: "Media", hint: "25 preguntas" },
-                { size: 50 as const, label: "Larga", hint: "50 preguntas" },
+                { size: 15 as const, label: "Kurz", hint: "15 Fragen" },
+                { size: 25 as const, label: "Mittel", hint: "25 Fragen" },
+                { size: 50 as const, label: "Lang", hint: "50 Fragen" },
               ] as const
             ).map(({ size, label, hint }) => (
               <button
@@ -270,20 +270,20 @@ export default function QuizComponent({
               {testTypeLabel}
             </p>
             <h2 className="text-xl font-bold text-textMain sm:text-2xl">
-              Modo examen
+              Prüfungsmodus
             </h2>
           </header>
 
           <div className="quiz-exam__progress rounded-2xl border border-primary/15 bg-gradient-to-r from-[#F4FBFF] to-[#EEF8FD] px-4 py-3">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-textMain/75">
               <span className="quiz-exam__progress-label">
-                Pregunta{" "}
+                Frage{" "}
                 <span className="font-bold text-textMain">{currentIndex + 1}</span>{" "}
-                de <span className="font-bold text-textMain">{totalQuestions}</span>
+                von <span className="font-bold text-textMain">{totalQuestions}</span>
               </span>
               {requestedCount > totalQuestions && (
                 <span className="quiz-exam__progress-note text-xs font-semibold text-amber-700">
-                  Disponibles: {totalQuestions}
+                  Verfügbar: {totalQuestions}
                 </span>
               )}
             </div>
@@ -349,7 +349,7 @@ export default function QuizComponent({
                 className="quiz-exam__next w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#3a9bc4]"
                 onClick={handleNext}
               >
-                {currentIndex >= totalQuestions - 1 ? "Ver resultados" : "Siguiente"}
+                {currentIndex >= totalQuestions - 1 ? "Ergebnisse anzeigen" : "Weiter"}
               </button>
             </div>
           )}
@@ -359,11 +359,11 @@ export default function QuizComponent({
       {showResults && (
         <section className="quiz-results space-y-6 text-center">
           <h2 className="quiz-results__title text-2xl font-bold text-textMain sm:text-3xl">
-            Resultados
+            Ergebnisse
           </h2>
           <div className="quiz-results__stats space-y-2 rounded-2xl border border-border bg-background px-6 py-8">
             <p className="quiz-results__score text-lg text-textMain/80">
-              Puntuación:{" "}
+              Punktzahl:{" "}
               <span className="font-bold text-primary">
                 {score}
               </span>
@@ -377,7 +377,7 @@ export default function QuizComponent({
             <p className="quiz-results__percent text-3xl font-bold text-textMain">
               {accuracyPercent}%
               <span className="quiz-results__percent-label ml-2 text-base font-normal text-textMain/55">
-                de aciertos ({correctAnswersCount}/{totalQuestions})
+                richtige Antworten ({correctAnswersCount}/{totalQuestions})
               </span>
             </p>
           </div>
@@ -387,7 +387,7 @@ export default function QuizComponent({
               className="quiz-results__retry w-full rounded-2xl border-2 border-border bg-background px-4 py-3 text-sm font-semibold text-textMain transition hover:border-primary/45 hover:bg-[#E4F6FD]"
               onClick={handleRetry}
             >
-              Volver a intentar
+              Erneut versuchen
             </button>
             {onRequestExit && (
               <button
@@ -395,7 +395,7 @@ export default function QuizComponent({
                 className="quiz-results__exit-dashboard text-sm font-semibold text-textMain/60 underline-offset-2 transition hover:text-primary hover:underline"
                 onClick={handleExit}
               >
-                Volver al Dashboard
+                Zurück zum Dashboard
               </button>
             )}
           </div>

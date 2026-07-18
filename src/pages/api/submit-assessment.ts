@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { userId, moduleId, answers } = body;
 
     if (!userId || !moduleId || !answers || answers.length === 0) {
-      return new Response(JSON.stringify({ error: 'Faltan datos requeridos' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Erforderliche Daten fehlen' }), { status: 400 });
     }
 
     // 2. Obtener las respuestas correctas de la base de datos
@@ -64,11 +64,11 @@ export const POST: APIRoute = async ({ request }) => {
       success: true,
       score,
       passed,
-      message: passed ? '¡Assessment aprobado! Ejercicios desbloqueados.' : 'No alcanzaste el mínimo. ¡Inténtalo de nuevo!'
+      message: passed ? 'Bewertung bestanden! Übungen freigeschaltet.' : 'Du hast das Minimum nicht erreicht. Versuche es erneut!'
     }), { status: 200 });
 
   } catch (error: any) {
     console.error('Error en submit-assessment:', error);
-    return new Response(JSON.stringify({ error: 'Error interno del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Interner Serverfehler' }), { status: 500 });
   }
 };

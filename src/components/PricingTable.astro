@@ -12,40 +12,46 @@ const accessToken = Astro.cookies.get('sb-access-token')?.value;
 type Plan = {
   name: string;
   price: string;
+  originalPrice?: string; // 👈 Agregamos el precio tachado
   period: string;
   priceId: string;
   features?: string[];
   cta: string;
   highlight: boolean;
+  launchBadge?: string; // 👈 Agregamos la etiqueta de lanzamiento
 };
 
 const plans: Plan[] = [
   {
     name: 'Monatlich',
-    price: '10',
+    price: '34',
     period: 'Monat',
-    priceId: 'price_1TM0stBnioMQ03JUH5Dyrax4', 
+    priceId: 'price_AQUI_PONDREMOS_EL_NUEVO_MENSUAL', // Lo cambiaremos enseguida
     features: ['Vollständiger Zugriff', 'Unbegrenzte Quizzes', 'Gespeicherter Fortschritt', 'Ranking'],
     cta: 'Jetzt starten',
     highlight: false,
   },
   {
-    name: 'Vierteljährlich',
-    price: '25',
-    period: 'Quartal',
-    priceId: 'price_1TM0tWBnioMQ03JUFa6hGZht', 
-    features: ['Vollständiger Zugriff', 'Unbegrenzte Quizzes', 'Gespeicherter Fortschritt', 'Ranking'],
-    cta: 'Jetzt starten',
-    highlight: false,
+    name: 'Pack 3 Monate',
+    price: '69',
+    originalPrice: '89', // 👈 El precio real que se verá tachado
+    period: '3 Monate',
+    priceId: 'price_AQUI_PONDREMOS_EL_NUEVO_TRIMESTRAL_BARATO', // Lo cambiaremos enseguida
+    features: ['Alles aus Monatlich', 'Ersparnis von über 35%', 'Prioritäts-Support', 'Perfekt für die FSP'],
+    cta: 'Bestes Angebot sichern',
+    highlight: true,
+    launchBadge: 'Nur für die ersten 50 Nutzer!', // 👈 Etiqueta especial
   },
+  // Si solo quieres ofrecer Mensual y 3 Meses, puedes borrar este bloque de 'Jährlich'
   {
     name: 'Jährlich',
-    price: '100',
+    price: '249',
+    originalPrice: '408',
     period: 'Jahr',
     priceId: 'price_1TM0u2BnioMQ03JUiK9cEfo8', 
-    features: ['Alles aus Monatlich', '2 Monate gratis', 'Prioritäts-Support', 'Zertifikat'],
-    cta: 'Bestes Angebot',
-    highlight: true,
+    features: ['Alles aus 3 Monate', 'Maximaler Rabatt', 'Zertifikat', '1 Jahr Sorgenfreiheit'],
+    cta: 'Jetzt starten',
+    highlight: false,
   },
 ];
 ---
@@ -58,14 +64,24 @@ const plans: Plan[] = [
           plan.highlight ? 'border-primary bg-card shadow-lg ring-2 ring-primary/10' : 'border-border bg-card'
         }`}
       >
-        {plan.highlight && (
+        {/* LÓGICA DE ETIQUETAS: Muestra lanzamiento si existe, si no, el recomendado */}
+        {plan.launchBadge ? (
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase whitespace-nowrap shadow-sm animate-pulse">
+            {plan.launchBadge}
+          </span>
+        ) : plan.highlight && (
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
             Empfohlen
           </span>
         )}
         
         <h3 class="text-xl font-bold text-textMain mb-2">{plan.name}</h3>
-        <div class="mb-6">
+        
+        {/* LÓGICA DE PRECIOS: Muestra el precio original tachado si existe */}
+        <div class="mb-6 flex items-baseline gap-2">
+          {plan.originalPrice && (
+            <span class="text-textMain/40 text-2xl font-medium line-through">€{plan.originalPrice}</span>
+          )}
           <span class="text-4xl font-extrabold text-textMain">€{plan.price}</span>
           <span class="text-textMain/70">/{plan.period}</span>
         </div>

@@ -22,9 +22,9 @@ if (!exercises || exercises.length === 0) {
 }
 ---
 
-<DashboardLayout title="Assessment del Módulo">
-  <h1 class="text-2xl font-bold mb-6">Prueba de la Unidad</h1>
-  <p class="mb-6 text-textMain/70">Responde todas las preguntas para desbloquear la siguiente unidad.</p>
+<DashboardLayout title="Modulbewertung">
+  <h1 class="text-2xl font-bold mb-6">Modultest</h1>
+  <p class="mb-6 text-textMain/70">Beantworte alle Fragen, um die nächste Einheit freizuschalten.</p>
 
   <form id="assessment-form" class="space-y-8" data-module-id={moduleId}>
     
@@ -57,7 +57,7 @@ if (!exercises || exercises.length === 0) {
         id="submit-assessment-btn"
         class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:bg-primary/90 transition-colors"
       >
-        Enviar Examen
+        Prüfung abgeben
       </button>
     </div>
 
@@ -83,7 +83,7 @@ if (!exercises || exercises.length === 0) {
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Evaluando...";
+    submitBtn.textContent = "Wird ausgewertet...";
 
     // 1. Recolectar respuestas del form
     const formData = new FormData(form);
@@ -116,22 +116,22 @@ if (!exercises || exercises.length === 0) {
       
       if (result.passed) {
         resultDiv.classList.add('bg-green-100', 'text-green-800');
-        resultDiv.innerHTML = `¡Felicidades! Aprobaste con un ${result.score}%. Redirigiendo...`;
+        resultDiv.innerHTML = `Glückwunsch! Du hast mit ${result.score}% bestanden. Weiterleitung...`;
         
         // Redirigir al dashboard tras 2 segundos para que vean el módulo desbloqueado
         setTimeout(() => window.location.href = '/dashboard', 2000);
       } else {
         resultDiv.classList.add('bg-red-100', 'text-red-800');
-        resultDiv.innerHTML = `Obtuviste un ${result.score}%. Necesitas 70% para aprobar. ¡Inténtalo de nuevo!`;
+        resultDiv.innerHTML = `Du hast ${result.score}% erreicht. Du brauchst 70% zum Bestehen. Versuche es erneut!`;
         submitBtn.disabled = false;
-        submitBtn.textContent = "Reintentar Examen";
+        submitBtn.textContent = "Prüfung wiederholen";
       }
 
     } catch (error) {
       console.error(error);
-      alert("Hubo un error al procesar el examen.");
+      alert("Beim Verarbeiten der Prüfung ist ein Fehler aufgetreten.");
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar Examen";
+      submitBtn.textContent = "Prüfung abgeben";
     }
   });
 </script>

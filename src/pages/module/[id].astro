@@ -77,7 +77,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
 }) || [];
 ---
 
-<DashboardLayout title={`Módulo: ${moduleData.title}`}>
+<DashboardLayout title={`Modul: ${moduleData.title}`}>
   
   <div class="mb-6">
     <a href="/dashboard" class="text-primary hover:underline text-sm font-medium">
@@ -112,7 +112,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
               Lektion {moduleData.order_index}.{lesson.order_index}
             </span>
             {lesson.percentage === 100 && (
-              <span class="text-green-500" title="Completada">✅</span>
+              <span class="text-green-500" title="Abgeschlossen">✅</span>
             )}
           </div>
           
