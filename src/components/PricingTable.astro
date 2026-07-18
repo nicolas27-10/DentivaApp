@@ -12,13 +12,13 @@ const accessToken = Astro.cookies.get('sb-access-token')?.value;
 type Plan = {
   name: string;
   price: string;
-  originalPrice?: string; // 👈 Agregamos el precio tachado
+  originalPrice?: string; 
   period: string;
   priceId: string;
   features?: string[];
   cta: string;
   highlight: boolean;
-  launchBadge?: string; // 👈 Agregamos la etiqueta de lanzamiento
+  launchBadge?: string; 
 };
 
 const plans: Plan[] = [
@@ -26,32 +26,30 @@ const plans: Plan[] = [
     name: 'Monatlich',
     price: '34',
     period: 'Monat',
-    priceId: 'price_AQUI_PONDREMOS_EL_NUEVO_MENSUAL', // Lo cambiaremos enseguida
+    priceId: 'price_AQUI_PONDREMOS_EL_MENSUAL', // ID del precio de 34€
     features: ['Vollständiger Zugriff', 'Unbegrenzte Quizzes', 'Gespeicherter Fortschritt', 'Ranking'],
     cta: 'Jetzt starten',
     highlight: false,
   },
   {
-    name: 'Pack 3 Monate',
-    price: '69',
-    originalPrice: '89', // 👈 El precio real que se verá tachado
+    name: '3-Monats-Paket',
+    price: '89',
     period: '3 Monate',
-    priceId: 'price_AQUI_PONDREMOS_EL_NUEVO_TRIMESTRAL_BARATO', // Lo cambiaremos enseguida
-    features: ['Alles aus Monatlich', 'Ersparnis von über 35%', 'Prioritäts-Support', 'Perfekt für die FSP'],
-    cta: 'Bestes Angebot sichern',
-    highlight: true,
-    launchBadge: 'Nur für die ersten 50 Nutzer!', // 👈 Etiqueta especial
-  },
-  // Si solo quieres ofrecer Mensual y 3 Meses, puedes borrar este bloque de 'Jährlich'
-  {
-    name: 'Jährlich',
-    price: '249',
-    originalPrice: '408',
-    period: 'Jahr',
-    priceId: 'price_1TM0u2BnioMQ03JUiK9cEfo8', 
-    features: ['Alles aus 3 Monate', 'Maximaler Rabatt', 'Zertifikat', '1 Jahr Sorgenfreiheit'],
-    cta: 'Jetzt starten',
+    priceId: 'price_AQUI_PONDREMOS_EL_TRIMESTRAL_NORMAL', // ID del precio de 89€
+    features: ['Alles aus Monatlich', 'Nur ~€29 pro Monat', '13% Ersparnis', 'Ideal für die FSP'],
+    cta: 'Paket wählen',
     highlight: false,
+  },
+  {
+    name: 'Einführungsangebot',
+    price: '69',
+    originalPrice: '89', // Precio que se verá tachado
+    period: '3 Monate',
+    priceId: 'price_AQUI_PONDREMOS_EL_TRIMESTRAL_PROMO', // ID del precio de 69€
+    features: ['Alles aus 3 Monate', 'Für die ersten 50 Nutzer', 'Größte Ersparnis', 'Perfekt für die FSP'],
+    cta: 'Angebot sichern',
+    highlight: true,
+    launchBadge: 'Nur noch wenige Plätze!', // Etiqueta roja de escasez
   },
 ];
 ---
@@ -64,7 +62,7 @@ const plans: Plan[] = [
           plan.highlight ? 'border-primary bg-card shadow-lg ring-2 ring-primary/10' : 'border-border bg-card'
         }`}
       >
-        {/* LÓGICA DE ETIQUETAS: Muestra lanzamiento si existe, si no, el recomendado */}
+        {/* Etiqueta de lanzamiento o destacado */}
         {plan.launchBadge ? (
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase whitespace-nowrap shadow-sm animate-pulse">
             {plan.launchBadge}
@@ -77,7 +75,7 @@ const plans: Plan[] = [
         
         <h3 class="text-xl font-bold text-textMain mb-2">{plan.name}</h3>
         
-        {/* LÓGICA DE PRECIOS: Muestra el precio original tachado si existe */}
+        {/* Bloque de precios */}
         <div class="mb-6 flex items-baseline gap-2">
           {plan.originalPrice && (
             <span class="text-textMain/40 text-2xl font-medium line-through">€{plan.originalPrice}</span>
