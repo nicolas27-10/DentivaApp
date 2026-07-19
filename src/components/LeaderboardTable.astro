@@ -1,71 +1,59 @@
 ---
 // Importa tu cliente de Supabase (ajusta la ruta según tu proyecto)
-import { supabase } from '@/lib/supabaseClient';
+// import { supabase } from '@/lib/supabaseClient';
 
-// 1. Pedimos a Supabase los campos username y total_fsp_points
-// 2. Los ordenamos de mayor a menor (ascending: false)
-// 3. Limitamos a los mejores 10
-const { data: leaderboard, error } = await supabase
-  .from('profiles')
-  .select('username, total_fsp_points')
-  .order('total_fsp_points', { ascending: false })
-  .limit(10);
+// // 1. Pedimos a Supabase los campos username y total_fsp_points
+// // 2. Los ordenamos de mayor a menor (ascending: false)
+// // 3. Limitamos a los mejores 10
+// const { data: leaderboard, error } = await supabase
+//   .from('profiles')
+//   .select('username, total_fsp_points')
+//   .order('total_fsp_points', { ascending: false })
+//   .limit(10);
 
-if (error) {
-  console.error("🛑 Error cargando la leaderboard:", error);
-}
+// if (error) {
+//   console.error("🛑 Error cargando la leaderboard:", error);
+// }
 
-// Opcional: Si quieres asegurarte de que no traiga usuarios con 0 puntos
-const activeUsers = leaderboard?.filter(user => user.total_fsp_points > 0) || [];
+// // Opcional: Si quieres asegurarte de que no traiga usuarios con 0 puntos
+// const activeUsers = leaderboard?.filter(user => user.total_fsp_points > 0) || [];
 ---
 
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-  <div class="flex justify-between items-center mb-6">
-    <!-- <h2 class="text-xl font-bold text-textMain flex items-center gap-2">
-      🏆 Clasificación FSP
-    </h2> -->
-  </div>
+
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
   
-  <div class="flex flex-col gap-2">
-    {activeUsers.length > 0 ? (
-      activeUsers.map((user, index) => {
-        // Le damos un color especial al Top 3
-        const isFirst = index === 0;
-        const isSecond = index === 1;
-        const isThird = index === 2;
-        
-        return (
-          <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
-            <div class="flex items-center gap-4">
-              <span class={`font-black text-lg w-6 text-center
-                ${isFirst ? 'text-yellow-500' : 
-                  isSecond ? 'text-gray-400' : 
-                  isThird ? 'text-amber-700' : 'text-gray-300'}`}>
-                {index + 1}
-              </span>
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-[#2B8EB5] flex items-center justify-center font-bold text-sm">
-                  {user.username ? user.username.charAt(0).toUpperCase() : '?'}
-                </div>
-                <span class="font-semibold text-gray-700">
-                  {user.username || 'Anonymer Benutzer'}
-                </span>
-              </div>
-            </div>
-            <div class="font-bold text-[#2B8EB5] bg-blue-50 px-3 py-1 rounded-lg text-sm">
-              {user.total_fsp_points} pts
-            </div>
-          </div>
-        );
-      })
-    ) : (
-      <div class="text-center py-8 text-gray-400">
-        <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-        <p class="text-sm font-medium">Noch keine Punktzahlen erfasst.</p>
-        <p class="text-xs mt-1">Sei der Erste, der den FSP-Modus abschließt!</p>
-      </div>
-    )}
+  <!-- Efecto visual de "Próximamente" -->
+  <div class="absolute inset-0 bg-gray-50/50 backdrop-blur-[2px] flex items-center justify-center z-10">
+    <div class="bg-white px-6 py-3 rounded-full border border-gray-200 shadow-sm flex items-center gap-3">
+      <span class="relative flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+      </span>
+      <span class="text-sm font-bold text-textMain uppercase tracking-widest">
+        Bald verfügbar
+      </span>
+    </div>
   </div>
+
+  <!-- Estructura visual atenuada (simulando cómo se verá) -->
+  <div class="w-full opacity-30 pointer-events-none">
+    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 mb-2">
+      <div class="flex items-center gap-4">
+        <span class="font-black text-lg w-6 text-yellow-500">1</span>
+        <div class="w-8 h-8 rounded-full bg-blue-100"></div>
+        <span class="font-semibold text-gray-700">Max Mustermann</span>
+      </div>
+      <div class="font-bold text-[#2B8EB5] bg-blue-50 px-3 py-1 rounded-lg text-sm">950 pts</div>
+    </div>
+    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+      <div class="flex items-center gap-4">
+        <span class="font-black text-lg w-6 text-gray-400">2</span>
+        <div class="w-8 h-8 rounded-full bg-blue-100"></div>
+        <span class="font-semibold text-gray-700">Anna Schmidt</span>
+      </div>
+      <div class="font-bold text-[#2B8EB5] bg-blue-50 px-3 py-1 rounded-lg text-sm">820 pts</div>
+    </div>
+  </div>
+
 </div>
