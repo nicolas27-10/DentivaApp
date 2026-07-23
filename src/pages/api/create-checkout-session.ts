@@ -21,8 +21,8 @@ export const POST: APIRoute = async ({ request }) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       // Usamos variables de entorno para las URLs o fallback a localhost
-      success_url: `${import.meta.env.SITE || 'http://localhost:4321'}/dashboard?success=true`,
-      cancel_url: `${import.meta.env.SITE || 'http://localhost:4321'}/pricing?canceled=true`,
+      success_url: `${origin}/dashboard?success=true`,
+      cancel_url: `${origin}/pricing?canceled=true`,
       customer_email: user.email,
       client_reference_id: user.id, 
       subscription_data: {
