@@ -5,6 +5,7 @@ import type { APIRoute } from "astro";
 export const POST: APIRoute = async ({ request }) => {
   try {
     const { priceId } = await request.json();
+    const origin = request.headers.get('origin') || new URL(request.url).origin;
 
     // 1. Validar sesión del usuario directamente en el servidor
     // Esto evita que alguien intente pagar sin estar logueado
