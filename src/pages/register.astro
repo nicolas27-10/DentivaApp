@@ -22,21 +22,26 @@ if (Astro.request.method === 'POST') {
     errorMessage = 'Das Formular konnte nicht verarbeitet werden (ungültiger Content-Type).';
   } else {
     const formData = await Astro.request.formData();
-    const name = String(formData.get('name') ?? '').trim();
+    const firstName = String(formData.get('first_name') ?? '').trim();
+    const lastName = String(formData.get('last_name') ?? '').trim();
     const email = String(formData.get('email') ?? '').trim();
     const password = String(formData.get('password') ?? '');
 
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       errorMessage = 'Bitte füllen Sie alle Felder aus.';
     } else {
-      const { error } = await signUp(email, password, { name });
+      // Pasamos first_name y last_name a la función signUp
+      const { error } = await signUp(email, password, { 
+        first_name: firstName, 
+        last_name: lastName 
+      });
 
       if (error) {
         errorMessage = error.message ?? 'Das Konto konnte nicht erstellt werden.';
       } else {
         successMessage =
           'Konto erfolgreich erstellt. Bitte überprüfen Sie Ihre E-Mail oder melden Sie sich an.';
-        return Astro.redirect('/dashboard')
+        return Astro.redirect('/dashboard');
       }
     }
   }
@@ -64,19 +69,36 @@ if (Astro.request.method === 'POST') {
     action="/register"
     enctype="application/x-www-form-urlencoded"
   >
-    <div>
-      <label for="name" class="block text-sm font-medium text-textMain/80 mb-1">
-        Name
-      </label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        required
-        class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-        placeholder="Ihr Name"
-      />
+    <!-- Nombre y Apellido en una fila de 2 columnas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="first_name" class="block text-sm font-medium text-textMain/80 mb-1">
+          Vorname
+        </label>
+        <input
+          type="text"
+          id="first_name"
+          name="first_name"
+          required
+          class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
+          placeholder="Max"
+        />
+      </div>
+      <div>
+        <label for="last_name" class="block text-sm font-medium text-textMain/80 mb-1">
+          Nachname
+        </label>
+        <input
+          type="text"
+          id="last_name"
+          name="last_name"
+          required
+          class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
+          placeholder="Mustermann"
+        />
+      </div>
     </div>
+
     <div>
       <label for="email" class="block text-sm font-medium text-textMain/80 mb-1">
         E-Mail
@@ -90,6 +112,7 @@ if (Astro.request.method === 'POST') {
         placeholder="deine@email.de"
       />
     </div>
+
     <div>
       <label for="password" class="block text-sm font-medium text-textMain/80 mb-1">
         Passwort
@@ -142,6 +165,7 @@ if (Astro.request.method === 'POST') {
       Registrieren
     </button>
   </form>
+
   <p class="mt-4 text-sm text-textMain/70">
     Haben Sie bereits ein Konto?{' '}
     <a href="/login" class="text-primary hover:underline">Anmelden</a>

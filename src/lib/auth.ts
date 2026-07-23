@@ -9,14 +9,16 @@ import { supabase } from './supabaseClient';
 export async function signIn(formData: FormData, cookies: any) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  
-  console.log("Intentando signIn para:", email);
-  
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  // 🛑 AQUÍ ESTÁ LA MAGIA: Si el login es exitoso, guardamos la sesión en el navegador
+  console.log('Intentando signIn para:', email);
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  // 🛑 Guardamos la sesión en el navegador si el login es exitoso
   if (data.session) {
-    // path: '/' asegura que la cookie esté disponible en toda la aplicación
     cookies.set('sb-access-token', data.session.access_token, { path: '/' });
     cookies.set('sb-refresh-token', data.session.refresh_token, { path: '/' });
   }
@@ -24,73 +26,73 @@ export async function signIn(formData: FormData, cookies: any) {
   return { data, error };
 }
 
-// 2. Modificamos signUp por si el usuario entra directo al registrarse
+// 2. Modificamos signUp para registrar usuario y guardar first_name / last_name
 export async function signUp(
-    email: string,
-    password: string,
-    metadata?: { name?: string },
-    cookies?: any // Lo hacemos opcional por si lo llamas desde un lugar sin cookies
-  ) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: metadata?.name
-        }
-      }
-    });
-  
-    if (error) {
-      return { error };
-    }
-  
-    const user = data.user;
-  
-    if (user) {
-      // Guardar el perfil en tu tabla personalizada
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: user.id,
-          email: user.email,
-          username: metadata?.name ?? null
-        });
-  
-      if (profileError) {
-        return { error: profileError };
-      }
+  email: string,
+  password: string,
+  metadata?: { first_name?: string; last_name?: string },
+  cookies?: any
+) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: metadata?.first_name ?? null,
+        last_name: metadata?.last_name ?? null,
+      },
+    },
+  });
 
-      // Si Supabase devuelve sesión tras el registro, la guardamos
-      if (data.session && cookies) {
-        cookies.set('sb-access-token', data.session.access_token, { path: '/' });
-        cookies.set('sb-refresh-token', data.session.refresh_token, { path: '/' });
-      }
-    }
-  
-    return { error: null };
+  if (error) {
+    return { error };
   }
+
+  const user = data.user;
+
+  if (user) {
+    // Guardar el perfil en la tabla de Supabase 'profiles'
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,
+        email: user.email,
+        first_name: metadata?.first_name ?? null,
+        last_name: metadata?.last_name ?? null,
+      });
+
+    if (profileError) {
+      return { error: profileError };
+    }
+
+    // Si Supabase devuelve sesión tras el registro, la guardamos
+    if (data.session && cookies) {
+      cookies.set('sb-access-token', data.session.access_token, { path: '/' });
+      cookies.set('sb-refresh-token', data.session.refresh_token, { path: '/' });
+    }
+  }
+
+  return { error: null };
+}
 
 // 3. Modificamos signOut para que limpie las cookies
 export async function signOut(cookies: any) {
-  // Borramos la evidencia del navegador
   cookies.delete('sb-access-token', { path: '/' });
   cookies.delete('sb-refresh-token', { path: '/' });
-  
-  // Cerramos sesión en Supabase
+
   return supabase.auth.signOut();
 }
 
-// 4. (Opcional) Una versión segura de getSession basada en cookies
+// 4. Versión segura de getSession basada en cookies
 export async function getSession(cookies: any) {
-    const accessToken = cookies.get('sb-access-token');
-    const refreshToken = cookies.get('sb-refresh-token');
+  const accessToken = cookies.get('sb-access-token');
+  const refreshToken = cookies.get('sb-refresh-token');
 
-    if (!accessToken || !refreshToken) return null;
+  if (!accessToken || !refreshToken) return null;
 
-    const { data, error } = await supabase.auth.getUser(accessToken.value);
-    
-    if (error || !data?.user) return null;
-    
-    return data.user;
+  const { data, error } = await supabase.auth.getUser(accessToken.value);
+
+  if (error || !data?.user) return null;
+
+  return data.user;
 }
