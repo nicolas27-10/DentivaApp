@@ -1,28 +1,30 @@
 ---
-import DashboardLayout from '../layouts/DashboardLayout.astro';
-import UnitCard from '../components/UnitCard.astro';
-import LeaderboardTable from '../components/LeaderboardTable.astro';
-import { getModulesWithProgress } from '@/lib/modules';
-import { supabase } from '@/lib/supabaseClient';
-import GeneralProgress from '../components/GeneralProgress';
-import DashboardTrainingSection from '@/components/DashboardTrainingSection';
+import DashboardLayout from "../layouts/DashboardLayout.astro";
+import UnitCard from "../components/UnitCard.astro";
+import LeaderboardTable from "../components/LeaderboardTable.astro";
+import { getModulesWithProgress } from "@/lib/modules";
+import { supabase } from "@/lib/supabaseClient";
+import GeneralProgress from "../components/GeneralProgress";
+import DashboardTrainingSection from "@/components/DashboardTrainingSection";
 
-if (Astro.request.method === 'POST') {
-  Astro.cookies.delete('sb-access-token', { path: '/' });
-  Astro.cookies.delete('sb-refresh-token', { path: '/' });
-  return Astro.redirect('/login');
+if (Astro.request.method === "POST") {
+  Astro.cookies.delete("sb-access-token", { path: "/" });
+  Astro.cookies.delete("sb-refresh-token", { path: "/" });
+  return Astro.redirect("/login");
 }
 
-const accessToken = Astro.cookies.get('sb-access-token');
-const refreshToken = Astro.cookies.get('sb-refresh-token');
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
 
-if (!accessToken || !refreshToken) return Astro.redirect('/login');
+if (!accessToken || !refreshToken) return Astro.redirect("/login");
 
-const { data: authData, error: authError } = await supabase.auth.getUser(accessToken.value);
+const { data: authData, error: authError } = await supabase.auth.getUser(
+  accessToken.value,
+);
 if (authError || !authData?.user) {
-  Astro.cookies.delete('sb-access-token', { path: '/' });
-  Astro.cookies.delete('sb-refresh-token', { path: '/' });
-  return Astro.redirect('/login');
+  Astro.cookies.delete("sb-access-token", { path: "/" });
+  Astro.cookies.delete("sb-refresh-token", { path: "/" });
+  return Astro.redirect("/login");
 }
 
 const user = authData.user;
@@ -30,23 +32,28 @@ const userId = user.id;
 
 // 1. Obtener perfil para los datos visuales de bienvenida (Nombre y Puntos FSP)
 const { data: profile } = await supabase
-  .from('profiles')
-  .select('total_fsp_points, first_name')
-  .eq('id', userId)
+  .from("profiles")
+  .select("total_fsp_points, first_name")
+  .eq("id", userId)
   .single();
 
 // 2. Obtener módulos (La función getModulesWithProgress YA se encarga de revisar si es Premium y bloquear)
 const modules = await getModulesWithProgress(userId, Astro.cookies);
 
 // 3. Preparar variables para la UI
-const firstName = profile?.first_name || 'Student';
-const fspPercentage = Math.min(Math.round((profile?.total_fsp_points || 0) / 10), 100); 
+const firstName = profile?.first_name || "Student";
+const fspPercentage = Math.min(
+  Math.round((profile?.total_fsp_points || 0) / 10),
+  100,
+);
 ---
 
 <DashboardLayout title="Dashboard - Dentiva">
   <section id="fortschritt" class="mb-12 scroll-mt-24">
-    <div class="bg-card border border-border rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 justify-between items-center shadow-md">
-      <div class="w-full lg:w-1/4 text-center lg:text-left min-w-0">
+    <div
+      class="bg-card border border-border rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 justify-between items-center shadow-md"
+    >
+      <div class="w-full lg:w-1/3 text-center lg:text-left min-w-0">
         <h1 class="text-3xl font-extrabold text-textMain mb-1 truncate">
           Hallo, <span class="capitalize">{firstName}</span>
         </h1>
@@ -56,19 +63,56 @@ const fspPercentage = Math.min(Math.round((profile?.total_fsp_points || 0) / 10)
       </div>
 
       <div class="w-full lg:w-2/5 space-y-5">
-        <GeneralProgress client:load userId={userId} accessToken={accessToken.value} />
+        <GeneralProgress
+          client:load
+          userId={userId}
+          accessToken={accessToken.value}
+        />
         <div>
-          <div class="flex justify-between text-xs font-bold text-textMain mb-2 tracking-wide uppercase">
+          <div
+            class="flex justify-between text-xs font-bold text-textMain mb-2 tracking-wide uppercase"
+          >
             <span>FSP-VORBEREITUNG</span>
             <span class="text-[#20B273]">{fspPercentage}%</span>
           </div>
           <div class="h-3 w-full bg-green-100 rounded-full overflow-hidden">
-            <div class="h-full bg-[#20B273] transition-all duration-1000 ease-out rounded-full" style={`width: ${fspPercentage}%`}></div>
+            <div
+              class="h-full bg-[#20B273] transition-all duration-1000 ease-out rounded-full"
+              style={`width: ${fspPercentage}%`}
+            >
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="w-full lg:w-1/3 flex flex-col gap-3">
+      <div class="w-full lg:w-1/3 flex">
+        <!-- Tarjeta Prominente de Insignias -->
+        <div
+          class="flex-1 flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 p-6 rounded-2xl shadow-sm"
+        >
+          <!-- Contenedor del Icono -->
+          <div
+            class="bg-amber-100 p-3 rounded-full text-amber-500 mb-3 shadow-inner"
+          >
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+              ></path>
+            </svg>
+          </div>
+
+          <!-- Textos -->
+          <div class="text-center">
+            <span class="block text-4xl font-bold text-slate-800 mb-1">0</span>
+            <span
+              class="text-sm font-bold text-slate-500 uppercase tracking-widest"
+              >Abzeichen</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="w-full lg:w-1/3 flex flex-col gap-3">
         <div class="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-xl">
           <div class="bg-amber-100 p-1.5 rounded-lg text-amber-600">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
@@ -81,37 +125,64 @@ const fspPercentage = Math.min(Math.round((profile?.total_fsp_points || 0) / 10)
           </div>
           <span class="text-sm font-semibold text-textMain">0 Fachbegriffe</span>
         </div>
-      </div>
+      </div> -->
     </div>
   </section>
 
   <section id="lernen" class="mb-12 scroll-mt-24">
-    <h2 class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest">
-      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+    <h2
+      class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest"
+    >
+      <svg
+        class="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        ><path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+        ></path></svg
+      >
       Lernmodule
     </h2>
 
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {modules.map((module) => (
-        <UnitCard
-          id={module.id}
-          title={module.title}
-          description={module.description}
-          progress={module.userProgress?.progress_percentage || 0}
-          isLocked={module.isLocked}
-          lockReason={module.lockReason}
-        />
-      ))}
+      {
+        modules.map((module) => (
+          <UnitCard
+            id={module.id}
+            title={module.title}
+            description={module.description}
+            progress={module.userProgress?.progress_percentage || 0}
+            isLocked={module.isLocked}
+            lockReason={module.lockReason}
+          />
+        ))
+      }
     </div>
   </section>
 
   <DashboardTrainingSection client:load />
 
   <section id="leaderboard" class="mb-12">
-    <h2 class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest">
-        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-        Wöchentliches Ranking
+    <h2
+      class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest"
+    >
+      <svg
+        class="w-6 h-6 text-primary"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        ><path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+        ></path></svg
+      >
+      Wöchentliches Ranking
     </h2>
-    <LeaderboardTable/>
+    <LeaderboardTable />
   </section>
 </DashboardLayout>
