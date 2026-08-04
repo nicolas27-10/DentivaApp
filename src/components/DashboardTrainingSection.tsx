@@ -1,6 +1,11 @@
 import { BookOpen, Crown, Zap } from "lucide-react";
 import type { QuizInitialSize } from "@/components/QuizComponent";
 
+// Definimos los props para aceptar isPremium desde fuera
+interface DashboardTrainingSectionProps {
+  isPremium?: boolean;
+}
+
 const MODES: {
   size: QuizInitialSize;
   title: string;
@@ -42,11 +47,11 @@ const MODES: {
   },
 ];
 
-export default function DashboardTrainingSection() {
+export default function DashboardTrainingSection({ isPremium }: DashboardTrainingSectionProps) {
   return (
     <section
       id="entrenamiento"
-      className="dashboard-training mb-12 scroll-mt-24"
+      className={`dashboard-training mb-12 ${!isPremium ? 'scroll-mt-36' : 'scroll-mt-24'}`}
       aria-labelledby="dashboard-training-heading"
     >
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

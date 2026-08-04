@@ -33,7 +33,7 @@ const userId = user.id;
 // 1. Obtener perfil para los datos visuales de bienvenida (Nombre y Puntos FSP)
 const { data: profile } = await supabase
   .from("profiles")
-  .select("total_fsp_points, first_name")
+  .select("total_fsp_points, first_name, is_premium")
   .eq("id", userId)
   .single();
 
@@ -41,6 +41,7 @@ const { data: profile } = await supabase
 const modules = await getModulesWithProgress(userId, Astro.cookies);
 
 // 3. Preparar variables para la UI
+const isPremium = profile?.is_premium ?? false;
 const firstName = profile?.first_name || "Student";
 const fspPercentage = Math.min(
   Math.round((profile?.total_fsp_points || 0) / 10),
@@ -49,7 +50,7 @@ const fspPercentage = Math.min(
 ---
 
 <DashboardLayout title="Dashboard - Dentiva">
-  <section id="fortschritt" class="mb-12 scroll-mt-24">
+  <section id="fortschritt" class={`mb-12 ${!isPremium ? 'scroll-mt-36' : 'scroll-mt-24'}`}>
     <div
       class="bg-card border border-border rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 justify-between items-center shadow-md"
     >
@@ -129,7 +130,7 @@ const fspPercentage = Math.min(
     </div>
   </section>
 
-  <section id="lernen" class="mb-12 scroll-mt-24">
+  <section id="lernen" class={`mb-12 ${!isPremium ? 'scroll-mt-36' : 'scroll-mt-24'}`}>
     <h2
       class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest"
     >
@@ -164,9 +165,9 @@ const fspPercentage = Math.min(
     </div>
   </section>
 
-  <DashboardTrainingSection client:load />
+  <DashboardTrainingSection isPremium={isPremium} />
 
-  <section id="leaderboard" class="mb-12">
+  <section id="leaderboard" class={`mb-12 ${!isPremium ? 'scroll-mt-36' : 'scroll-mt-24'}`}>
     <h2
       class="text-lg font-semibold text-textMain mb-4 flex items-center gap-2 uppercase tracking-widest"
     >
