@@ -15,37 +15,37 @@ const MODES: {
   accentClass: string;
   iconWrapClass: string;
 }[] = [
-  {
-    size: 15,
-    title: "Schnelltest",
-    subtitle: "15 Fragen",
-    description: "Ideal für eine schnelle Wiederholung zwischen Patienten.",
-    icon: Zap,
-    accentClass: "text-amber-600 group-hover:text-amber-700",
-    iconWrapClass:
-      "bg-amber-50 text-amber-600 ring-amber-100 group-hover:bg-amber-100",
-  },
-  {
-    size: 25,
-    title: "Standardtest",
-    subtitle: "25 Fragen",
-    description: "Das ausgewogenste Format für dein Lernen.",
-    icon: BookOpen,
-    accentClass: "text-primary group-hover:text-[#3a9bc4]",
-    iconWrapClass:
-      "bg-[#E4F6FD] text-primary ring-[#C8E8F5] group-hover:bg-[#d4eef8]",
-  },
-  {
-    size: 50,
-    title: "Intensivsimulation",
-    subtitle: "50 Fragen",
-    description: "Teste deine Ausdauer und dein Gesamtwissen.",
-    icon: Crown,
-    accentClass: "text-violet-600 group-hover:text-violet-700",
-    iconWrapClass:
-      "bg-violet-50 text-violet-600 ring-violet-100 group-hover:bg-violet-100",
-  },
-];
+    {
+      size: 15,
+      title: "Schnelltest",
+      subtitle: "15 Fragen",
+      description: "Ideal für eine schnelle Wiederholung zwischen Patienten.",
+      icon: Zap,
+      accentClass: "text-amber-600 group-hover:text-amber-700",
+      iconWrapClass:
+        "bg-amber-50 text-amber-600 ring-amber-100 group-hover:bg-amber-100",
+    },
+    {
+      size: 25,
+      title: "Standardtest",
+      subtitle: "25 Fragen",
+      description: "Das ausgewogenste Format für dein Lernen.",
+      icon: BookOpen,
+      accentClass: "text-primary group-hover:text-[#3a9bc4]",
+      iconWrapClass:
+        "bg-[#E4F6FD] text-primary ring-[#C8E8F5] group-hover:bg-[#d4eef8]",
+    },
+    {
+      size: 50,
+      title: "Intensivsimulation",
+      subtitle: "50 Fragen",
+      description: "Teste deine Ausdauer und dein Gesamtwissen.",
+      icon: Crown,
+      accentClass: "text-violet-600 group-hover:text-violet-700",
+      iconWrapClass:
+        "bg-violet-50 text-violet-600 ring-violet-100 group-hover:bg-violet-100",
+    },
+  ];
 
 export default function DashboardTrainingSection({ isPremium }: DashboardTrainingSectionProps) {
   return (
@@ -58,8 +58,15 @@ export default function DashboardTrainingSection({ isPremium }: DashboardTrainin
         <div>
           <h2
             id="dashboard-training-heading"
-            className="text-lg font-semibold text-textMain uppercase tracking-widest"
+            className="text-lg font-semibold flex items-center gap-2 text-textMain uppercase tracking-widest"
           >
+            <svg
+              className="w-6 h-6 text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15.5 13a3.5 3.5 0 0 0 -3.5 3.5v1a3.5 3.5 0 0 0 7 0v-1.8" /><path d="M8.5 13a3.5 3.5 0 0 1 3.5 3.5v1a3.5 3.5 0 0 1 -7 0v-1.8" /><path d="M17.5 16a3.5 3.5 0 0 0 0 -7h-.5" /><path d="M19 9.3v-2.8a3.5 3.5 0 0 0 -7 0" /><path d="M6.5 16a3.5 3.5 0 0 1 0 -7h.5" /><path d="M5 9.3v-2.8a3.5 3.5 0 0 1 7 0v10" />
+              </svg>
             Trainingszentrum
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-textMain/65">
