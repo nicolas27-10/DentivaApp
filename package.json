@@ -19,6 +19,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "^6.0.8",
+    "caniuse-lite": "^1.0.30001809",
     "csv-parser": "^3.2.1",
     "dotenv": "^16.6.1",
     "lucide-react": "^1.9.0",
