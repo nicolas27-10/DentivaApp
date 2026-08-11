@@ -66,6 +66,23 @@ const { data: exercises, error: exercisesError } = await supabase
   .order("order_index")
   .setHeader('Authorization', `Bearer ${token}`);
 
+// 4. Verificar si el usuario ya completó la lección (para el modo práctica)
+const exerciseIds = exercises?.map(e => e.id) || [];
+let isCompleted = false;
+
+if (exerciseIds.length > 0) {
+  const { data: attempts } = await supabase
+    .from("user_attempts")
+    .select("exercise_id")
+    .eq("user_id", userId)
+    .in("exercise_id", exerciseIds)
+    .setHeader('Authorization', `Bearer ${token}`);
+    
+  // Si tiene intentos guardados para todos los ejercicios válidos, está al 100%
+  if (attempts && attempts.length >= exerciseIds.length) {
+    isCompleted = true;
+  }
+}
 ---
 
 <DashboardLayout title={lesson.title}>
@@ -101,6 +118,7 @@ const { data: exercises, error: exercisesError } = await supabase
           userId={userId} 
           lessonId={Number(id)} 
           moduleId={lesson.module_id}
+          isCompleted={isCompleted} 
         />
       ) : (
         <p class="text-gray-500 text-center py-8">Für diese Lektion gibt es noch keine Übungen.</p>

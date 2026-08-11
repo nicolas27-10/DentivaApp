@@ -1,7 +1,7 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 import { supabase } from "../../lib/supabaseClient";
-import { getSession } from '@/lib/auth'; // ✅ Importación correcta
+import { getSession } from '@/lib/auth';
 
 export const prerender = false;
 
@@ -48,11 +48,11 @@ const { data: allExercises } = await supabase
   .from("exercises")
   .select("id, lesson_id")
   .in("lesson_id", lessonIds)
-  .neq("type", "multiple_choice") // 👈 ¡AQUÍ ESTÁ LA CORRECCIÓN! Ignoramos el import masivo
+  .neq("type", "multiple_choice") 
   .setHeader('Authorization', `Bearer ${token}`);
 
 // 5. Obtener los intentos del usuario (¡Con Token!)
-const exerciseIds = allExercises?.map(e => e.id) || [];
+const exerciseIds = allExercises?.map(e => String(e.id)) || [];
 let attemptedExerciseIds = new Set();
 
 if (userId && exerciseIds.length > 0) {
@@ -63,14 +63,15 @@ if (userId && exerciseIds.length > 0) {
     .in("exercise_id", exerciseIds)
     .setHeader('Authorization', `Bearer ${token}`);
   
-  attemptedExerciseIds = new Set(attempts?.map(a => a.exercise_id));
+  attemptedExerciseIds = new Set(attempts?.map(a => String(a.exercise_id)));
 }
 
 // 6. Combinar datos: Calcular progreso por cada lección
 const lessonsWithProgress = lessons?.map(lesson => {
-  const lessonExercises = allExercises?.filter(e => e.lesson_id === lesson.id) || [];
+  // 👈 Forzamos String() para evitar errores de comparación
+  const lessonExercises = allExercises?.filter(e => String(e.lesson_id) === String(lesson.id)) || [];
   const total = lessonExercises.length;
-  const completed = lessonExercises.filter(e => attemptedExerciseIds.has(e.id)).length;
+  const completed = lessonExercises.filter(e => attemptedExerciseIds.has(String(e.id))).length;
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
   
   return { ...lesson, total, completed, percentage };
@@ -100,7 +101,9 @@ const lessonsWithProgress = lessons?.map(lesson => {
     {lessonsWithProgress.map((lesson) => (
       <a 
         href={`/lesson/${lesson.id}`}
-        class="flex flex-col h-full bg-card border-2 border-border rounded-xl p-6 hover:border-primary hover:shadow-md transition-all group relative overflow-hidden"
+        data-lesson-id={lesson.id}
+        data-total={lesson.total}
+        class="lesson-card flex flex-col h-full bg-card border-2 border-border rounded-xl p-6 hover:border-primary hover:shadow-md transition-all group relative overflow-hidden"
       >
         {lesson.percentage === 100 && (
           <div class="absolute inset-0 bg-green-50/30 pointer-events-none"></div>
@@ -132,11 +135,11 @@ const lessonsWithProgress = lessons?.map(lesson => {
           <div class="mt-auto">
             <div class="flex justify-between text-xs font-medium text-textMain/60 mb-1">
               <span>Fortschritt</span>
-              <span>{lesson.percentage}%</span>
+              <span class="progress-text">{lesson.percentage}%</span>
             </div>
             <div class="h-1.5 w-full bg-border rounded-full overflow-hidden">
               <div 
-                class={`h-full transition-all duration-500 ${lesson.percentage === 100 ? 'bg-green-500' : 'bg-primary'}`}
+                class={`progress-bar h-full transition-all duration-500 ${lesson.percentage === 100 ? 'bg-green-500' : 'bg-primary'}`}
                 style={`width: ${lesson.percentage}%`}
               ></div>
             </div>
@@ -144,7 +147,7 @@ const lessonsWithProgress = lessons?.map(lesson => {
         </div>
         
         <div class="mt-6 pt-4 border-t border-border flex items-center justify-between text-sm font-medium text-primary relative z-10">
-          <span>{lesson.percentage === 100 ? 'Lektion wiederholen' : lesson.percentage > 0 ? 'Setzen Sie die Lektion fort' : 'Betreten Sie die Lektion'}</span>
+          <span class="action-text">{lesson.percentage === 100 ? 'Lektion wiederholen' : lesson.percentage > 0 ? 'Setzen Sie die Lektion fort' : 'Betreten Sie die Lektion'}</span>
           <span class="transform group-hover:translate-x-1 transition-transform">→</span>
         </div>
       </a>
@@ -157,4 +160,54 @@ const lessonsWithProgress = lessons?.map(lesson => {
     </div>
   )}
 
+  {/* --- SCRIPT PARA LEER BORRADORES LOCALES --- */}
+  <script define:vars={{ userId, moduleId: id }}>
+    const checkLocalProgress = () => {
+      const lessonCards = document.querySelectorAll('.lesson-card');
+      
+      lessonCards.forEach(card => {
+        const lessonId = card.getAttribute('data-lesson-id');
+        const totalQuestions = parseInt(card.getAttribute('data-total'), 10);
+        
+        // 👈 Aquí usamos la nueva llave exacta
+        const storageKey = `dentiva_progress_${userId}_m${moduleId}_l${lessonId}`;
+        const savedProgress = localStorage.getItem(storageKey);
+        
+        if (savedProgress && totalQuestions > 0) {
+          try {
+            const parsed = JSON.parse(savedProgress);
+            const answeredCount = Object.keys(parsed).length;
+            
+            if (answeredCount > 0) {
+              const actionTextSpan = card.querySelector('.action-text');
+              
+              if (actionTextSpan && !actionTextSpan.textContent.includes('wiederholen')) {
+                const localPercentage = Math.round((answeredCount / totalQuestions) * 100);
+                
+                actionTextSpan.innerHTML = 'Fortsetzen ⏳';
+                actionTextSpan.style.color = '#F59E0B'; 
+                
+                const progressText = card.querySelector('.progress-text');
+                if (progressText) progressText.innerText = `${localPercentage}%`;
+                
+                const progressBar = card.querySelector('.progress-bar');
+                if (progressBar) {
+                  progressBar.style.width = `${localPercentage}%`;
+                  progressBar.classList.remove('bg-primary'); 
+                  progressBar.classList.add('bg-amber-400'); 
+                }
+              }
+            }
+          } catch(e) {}
+        }
+      });
+    };
+
+    // Ejecutar inmediatamente
+    checkLocalProgress();
+    // Ejecutar en navegación estándar
+    document.addEventListener('DOMContentLoaded', checkLocalProgress);
+    // Ejecutar en navegación de Astro (View Transitions)
+    document.addEventListener('astro:page-load', checkLocalProgress);
+  </script>
 </DashboardLayout>
