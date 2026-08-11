@@ -28,7 +28,7 @@ export async function getModulesWithProgress(userId: string | undefined, cookies
     return [];
   }
 
-  // 👇 AQUÍ ESTÁ LA NUEVA LÓGICA DE SUSCRIPCIÓN 👇
+  // 👇 LÓGICA DE SUSCRIPCIÓN
   let hasSubscription = false;
   if (userId) {
     const { data: profile, error: profileError } = await supabase
@@ -43,20 +43,55 @@ export async function getModulesWithProgress(userId: string | undefined, cookies
     }
   }
 
+  // 🔍 NUEVO: OBTENER TOTALES DE EJERCICIOS PARA EL DASHBOARD
+  // Con esto el backend calcula los ejercicios totales y completados reales de cada módulo.
+  const { data: allLessons } = await supabase.from("lessons").select("id, module_id").setHeader('Authorization', `Bearer ${token}`);
+  const { data: allExercises } = await supabase.from("exercises").select("id, lesson_id").neq("type", "multiple_choice").setHeader('Authorization', `Bearer ${token}`);
+  const { data: allAttempts } = await supabase.from("user_attempts").select("exercise_id").eq("user_id", userId).setHeader('Authorization', `Bearer ${token}`);
+  
+  const attemptedSet = new Set(allAttempts?.map(a => a.exercise_id) || []);
+
   console.log("--- INICIANDO REVISIÓN DE MÓDULOS ---");
 
   return modules.map((module, index) => {
-    const userProgress = progress.find((p) => p.module_id === module.id);
+    
+    // 🧮 CÁLCULO DE EJERCICIOS DEL MÓDULO
+    const moduleLessonIds = allLessons?.filter(l => l.module_id === module.id).map(l => l.id) || [];
+    const moduleExercises = allExercises?.filter(e => moduleLessonIds.includes(e.lesson_id)) || [];
+    
+    const total_exercises = moduleExercises.length;
+    const completed_exercises = moduleExercises.filter(e => attemptedSet.has(e.id)).length;
+    
+    // Calculamos el porcentaje real para apoyar a la tabla user_progress
+    const actualPercentage = total_exercises > 0 ? Math.round((completed_exercises / total_exercises) * 100) : 0;
+
+    let userProgress = progress?.find((p) => p.module_id === module.id);
+    
+    // Si no hay registro o está en 0, usamos el porcentaje real recién calculado
+    if (!userProgress) {
+        userProgress = { progress_percentage: actualPercentage } as any;
+    } else if ((userProgress.progress_percentage === 0 || !userProgress.progress_percentage) && actualPercentage > 0) {
+        userProgress.progress_percentage = actualPercentage;
+    }
+
     let isLocked = false;
     let lockReason = null; 
 
     console.log(`\nEvaluando Módulo: [${index}] ${module.title}`);
+    console.log(` -> DB Total: ${total_exercises} | DB Completados: ${completed_exercises}`);
 
     // Si index > 0 significa: "A partir del SEGUNDO módulo"
     if (index > 0) {
       const previousModule = modules[index - 1];
-      const previousProgress = progress.find((p) => p.module_id === previousModule.id);
-      const prevPercentage = Number(previousProgress?.progress_percentage) || 0;
+      const previousProgress = progress?.find((p) => p.module_id === previousModule.id);
+      
+      // Cálculo robusto del progreso anterior por si la base de datos está retrasada
+      const prevLessonIds = allLessons?.filter(l => l.module_id === previousModule.id).map(l => l.id) || [];
+      const prevExercises = allExercises?.filter(e => prevLessonIds.includes(e.lesson_id)) || [];
+      const prevCompleted = prevExercises.filter(e => attemptedSet.has(e.id)).length;
+      const realPrevPercentage = prevExercises.length > 0 ? Math.round((prevCompleted / prevExercises.length) * 100) : 0;
+
+      const prevPercentage = Math.max(Number(previousProgress?.progress_percentage) || 0, realPrevPercentage);
       
       const isPrevCompleted = 
         previousProgress?.completed === true || 
@@ -75,7 +110,6 @@ export async function getModulesWithProgress(userId: string | undefined, cookies
         console.log(`  -> 🔒 ACCIÓN: Bloquear (falta completar anterior)`);
       } 
       // 2. Si ya pasaste el anterior, verificamos si tienes Premium
-      // Como estamos dentro de index > 0, esto aplica a TODOS a partir del segundo módulo
       else if (!hasSubscription) {
         isLocked = true; 
         lockReason = 'subscription_required';
@@ -84,7 +118,6 @@ export async function getModulesWithProgress(userId: string | undefined, cookies
         console.log(`  -> 🔓 ACCIÓN: Desbloquear (Tienes Premium)`);
       }
     } else {
-      // Index 0 (El primer módulo siempre entra aquí)
       console.log(`  -> 🔓 ACCIÓN: Desbloquear (Es el primer módulo gratis)`);
     }
 
@@ -92,7 +125,9 @@ export async function getModulesWithProgress(userId: string | undefined, cookies
       ...module,
       isLocked,
       lockReason,
-      userProgress: userProgress || null 
+      userProgress, 
+      total_exercises,       // 👈 AQUÍ ENVIAMOS LOS DATOS AL FRONTEND
+      completed_exercises    // 👈 AQUÍ ENVIAMOS LOS DATOS AL FRONTEND
     };
   });
 }

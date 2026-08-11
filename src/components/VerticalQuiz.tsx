@@ -19,15 +19,16 @@ interface QuizProps {
   userId: string;
   lessonId: string | number;
   moduleId: string | number;
+  isCompleted?: boolean; // 👈 1. Añadimos la propiedad
 }
 
-export default function VerticalQuiz({ exercises, userId, lessonId, moduleId }: QuizProps) {
+export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, isCompleted = false }: QuizProps) {
   const [shuffledExercises, setShuffledExercises] = useState<Exercise[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
-  const storageKey = `dentiva_progress_${userId}_${lessonId}`;
+  const storageKey = `dentiva_progress_${userId}_m${moduleId}_l${lessonId}`;
 
   const [answers, setAnswers] = useState<Record<number, number | boolean>>(() => {
     if (typeof window !== 'undefined') {
@@ -140,6 +141,17 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId }: 
           <p className="text-[#2B8EB5] font-bold text-sm tracking-wide animate-pulse uppercase">
             Fortschritt speichern...
           </p>
+        </div>
+      )}
+
+      {/* 🟢 2. BANNER DE MODO PRÁCTICA (Aparece si ya tiene 100%) */}
+      {isCompleted && (
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-xl flex items-start gap-4 shadow-sm z-10 relative">
+          <span className="text-2xl">✅</span>
+          <div>
+            <h4 className="font-bold">Du hast diese Lektion bereits abgeschlossen!</h4>
+            <p className="text-sm mt-1 opacity-90">Du kannst die Fragen zur Übung beliebig oft wiederholen. Dein Fortschritt von 100% bleibt erhalten.</p>
+          </div>
         </div>
       )}
 
