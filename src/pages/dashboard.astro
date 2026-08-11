@@ -194,6 +194,8 @@ const fspPercentage = Math.min(
             progress={module.userProgress?.progress_percentage || 0}
             isLocked={module.isLocked}
             lockReason={module.lockReason}
+            dbTotal={module.total_exercises} // 👈 ¡NUEVO!
+            dbCompleted={module.completed_exercises} // 👈 ¡NUEVO!
           />
         ))
       }
@@ -222,4 +224,61 @@ const fspPercentage = Math.min(
     </h2>
     <LeaderboardTable />
   </section>
+
+  {/* --- SCRIPT GLOBAL DE PROGRESO EN DASHBOARD (MODO DEBUG) --- */}
+  <script define:vars={{ userId }}>
+    const syncDashboardProgress = () => {
+      console.log("🔍 Iniciando escaneo de progreso local en el Dashboard...");
+      const moduleCards = document.querySelectorAll('.module-card');
+      
+      moduleCards.forEach(card => {
+        const moduleId = card.getAttribute('data-module-id');
+        const dbTotal = parseInt(card.getAttribute('data-db-total') || '0', 10);
+        let dbCompleted = parseInt(card.getAttribute('data-db-completed') || '0', 10);
+        
+        console.log(`📦 Módulo ${moduleId} -> Total DB: ${dbTotal} | Completados DB: ${dbCompleted}`);
+
+        if (dbTotal === 0) {
+          console.warn(`⚠️ Módulo ${moduleId} ignorado: El total de ejercicios es 0. ¿Falta en getModulesWithProgress?`);
+          return;
+        }
+
+        let localBonus = 0;
+        const prefix = `dentiva_progress_${userId}_m${moduleId}_l`;
+        
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(prefix)) {
+            try {
+              const parsed = JSON.parse(localStorage.getItem(key));
+              localBonus += Object.keys(parsed).length;
+            } catch(e) {}
+          }
+        }
+
+        console.log(`✅ Módulo ${moduleId} -> Respuestas locales encontradas: ${localBonus}`);
+
+        if (localBonus > 0) {
+          const totalCompleted = Math.min(dbCompleted + localBonus, dbTotal);
+          const currentPercentage = Math.round((totalCompleted / dbTotal) * 100);
+
+          const progressText = card.querySelector('.progress-text');
+          if (progressText && currentPercentage < 100) { 
+            progressText.innerText = `${currentPercentage}%`;
+          }
+
+          const progressBar = card.querySelector('.progress-bar');
+          if (progressBar && currentPercentage < 100) {
+            progressBar.style.width = `${currentPercentage}%`;
+            progressBar.classList.remove('bg-primary'); 
+            progressBar.classList.add('bg-amber-400');
+          }
+        }
+      });
+    };
+
+    syncDashboardProgress();
+    document.addEventListener('DOMContentLoaded', syncDashboardProgress);
+    document.addEventListener('astro:page-load', syncDashboardProgress);
+  </script>
 </DashboardLayout>

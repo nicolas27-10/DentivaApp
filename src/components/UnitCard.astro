@@ -7,6 +7,8 @@ interface Props {
   progress?: number;
   isLocked?: boolean;
   lockReason?: 'previous_incomplete' | 'subscription_required' | null;
+  dbTotal?: number; // 👈 NUEVO: Total de ejercicios en la BD
+  dbCompleted?: number; // 👈 NUEVO: Ejercicios completados en la BD
 }
 
 const { 
@@ -15,14 +17,16 @@ const {
   description = '', 
   progress = 0, 
   isLocked = false,
-  lockReason = null
+  lockReason = null,
+  dbTotal = 0, // 👈 Inicializamos con 0
+  dbCompleted = 0 // 👈 Inicializamos con 0
 } = Astro.props;
 
 const isPremiumLock = isLocked && lockReason === 'subscription_required';
 const isProgressLock = isLocked && lockReason === 'previous_incomplete';
 
 // Lógica de estilos
-const baseClasses = "box-border p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative min-h-[160px] justify-between flex flex-col";
+const baseClasses = "module-card box-border p-6 bg-card rounded-2xl ring-2 transition-all border-t-8 relative min-h-[160px] justify-between flex flex-col"; // 👈 AÑADIMOS CLASE 'module-card'
 
 // 1. Estilo ACTIVO (Desbloqueado o Premium ya pagado)
 const activeClasses = "ring-border border-primary shadow-md hover:shadow-lg hover:-translate-y-1 hover:ring-primary cursor-pointer";
@@ -38,7 +42,13 @@ const cardClasses = `${baseClasses} ${
 }`;
 ---
 
-<div class={cardClasses}>
+<!-- 👇 Inyectamos data-module-id, data-db-total, y data-db-completed -->
+<div 
+  class={cardClasses}
+  data-module-id={id}
+  data-db-total={dbTotal}
+  data-db-completed={dbCompleted}
+>
   { !isLocked ? (
     <a href={`/module/${id}`} class="absolute inset-0 z-10" aria-label={`${title} öffnen`}></a>
   ) : null }
@@ -87,10 +97,12 @@ const cardClasses = `${baseClasses} ${
       <div>
         <div class="flex justify-between text-xs font-bold text-textMain/60 mb-1.5">
           <span>Fortschritt</span>
-          <span>{progress}%</span>
+          <!-- 👇 Añadimos la clase 'progress-text' -->
+          <span class="progress-text">{progress}%</span> 
         </div>
         <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div class="h-full bg-primary rounded-full transition-all duration-700" style={`width: ${progress}%`} />
+          <!-- 👇 Añadimos la clase 'progress-bar' -->
+          <div class="progress-bar h-full bg-primary rounded-full transition-all duration-700" style={`width: ${progress}%`} /> 
         </div>
       </div>
     )}
