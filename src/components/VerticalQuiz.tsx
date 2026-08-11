@@ -108,25 +108,25 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId }: 
       
     } catch (error) {
       console.error(error);
-      alert("Beim Speichern Ihres Spielfortschritts ist ein Fehler opgetreten.");
-      setIsSaving(false); // Al ponerlo en false, el useEffect de arriba reactiva el scroll solo
+      alert("Beim Speichern Ihres Spielfortschritts ist ein Fehler aufgetreten.");
+      setIsSaving(false); 
     }
   };
 
   if (!isMounted) return null;
 
-  // 1. Filtramos SOLO las preguntas que son de verdadero/falso para el progreso
-  // (Asegúrate de que el string 'verdadero_falso' sea exactamente el que usas en tu base de datos)
-  const gradableExercises = shuffledExercises.filter(ex => ex.type === 'verdadero_falso');
+  // 1. El progreso se basa en TODOS los ejercicios válidos que llegan al componente
+  const gradableExercises = shuffledExercises;
   
-  // 2. El total a completar se basa solo en esas preguntas
+  // 2. El total a completar se basa en esos ejercicios
   const totalQuestions = gradableExercises.length;
   
-  // 3. Contamos cuántas de ESAS preguntas específicas han sido respondidas
+  // 3. Contamos cuántas preguntas han sido respondidas
   const answeredCount = gradableExercises.filter(ex => answers[ex.id] !== undefined).length;
   
   // 4. Calculamos el porcentaje
   const progressPercentage = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+  
   return (
     <div className="mx-auto pb-24 relative min-h-[400px]">
       
