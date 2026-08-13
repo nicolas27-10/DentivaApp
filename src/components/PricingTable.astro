@@ -122,51 +122,57 @@ const plans: Plan[] = [
 <script>
   import { supabase } from "../lib/supabaseClient";
 
-  const checkoutButtons = document.querySelectorAll('.checkout-button');
-  const authContext = document.getElementById('auth-context');
-  const accessToken = authContext?.dataset.token;
+  const setupCheckoutButtons = () => {
+    // 1. Le indicamos a TypeScript que busque específicamente botones (HTMLButtonElement)
+    const checkoutButtons = document.querySelectorAll<HTMLButtonElement>('.checkout-button');
+    const authContext = document.getElementById('auth-context');
+    const accessToken = authContext?.dataset.token;
 
-  checkoutButtons.forEach(button => {
-    button.addEventListener('click', async (e) => {
-      const btn = e.currentTarget as HTMLButtonElement;
-      const priceId = btn.dataset.priceId;
+    checkoutButtons.forEach(button => {
+      // 2. Definimos 'e' como un MouseEvent
+      button.onclick = async (e: MouseEvent) => {
+        const btn = e.currentTarget as HTMLButtonElement;
+        const priceId = btn.dataset.priceId;
 
-      if (!priceId) return;
-      if (!accessToken) {
-        alert("Bitte melden Sie sich an, um ein Abonnement abzuschließen.");
-        window.location.href = "/login";
-        return;
-      }
-
-      const originalText = btn.innerText;
-      btn.innerText = "Wird verarbeitet...";
-      btn.disabled = true;
-
-      try {
-        const { data, error } = await supabase.auth.getUser(accessToken);
-        if (error || !data?.user) throw new Error("Sitzung abgelaufen. Bitte erneut anmelden.");
-
-        const response = await fetch('/api/create-checkout-session', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({ priceId }),
-        });
-
-        const sessionData = await response.json();
-        if (sessionData.url) {
-          window.location.href = sessionData.url;
-        } else {
-          throw new Error(sessionData.error || 'Fehler beim Erstellen der Sitzung');
+        if (!priceId) return;
+        if (!accessToken) {
+          alert("Bitte melden Sie sich an, um ein Abonnement abzuschließen.");
+          window.location.href = "/login";
+          return;
         }
-      } catch (error: any) {
-        alert(error.message);
-        btn.innerText = originalText;
-        btn.disabled = false;
-        if (error.message.includes("Sitzung")) window.location.href = "/login";
-      }
+
+        const originalText = btn.innerText;
+        btn.innerText = "Wird verarbeitet...";
+        btn.disabled = true;
+
+        try {
+          const { data, error } = await supabase.auth.getUser(accessToken);
+          if (error || !data?.user) throw new Error("Sitzung abgelaufen. Bitte erneut anmelden.");
+
+          const response = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ priceId }),
+          });
+
+          const sessionData = await response.json();
+          if (sessionData.url) {
+            window.location.href = sessionData.url;
+          } else {
+            throw new Error(sessionData.error || 'Fehler beim Erstellen der Sitzung');
+          }
+        } catch (error: any) {
+          alert(error.message);
+          btn.innerText = originalText;
+          btn.disabled = false;
+          if (error.message.includes("Sitzung")) window.location.href = "/login";
+        }
+      };
     });
-  });
+  };
+
+  document.addEventListener('astro:page-load', setupCheckoutButtons);
 </script>
