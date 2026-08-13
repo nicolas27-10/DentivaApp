@@ -30,7 +30,7 @@ export async function signIn(formData: FormData, cookies: any) {
 export async function signUp(
   email: string,
   password: string,
-  metadata?: { first_name?: string; last_name?: string },
+  metadata?: { first_name?: string; last_name?: string; nationality?: string },
   cookies?: any
 ) {
   const { data, error } = await supabase.auth.signUp({
@@ -40,6 +40,7 @@ export async function signUp(
       data: {
         first_name: metadata?.first_name ?? null,
         last_name: metadata?.last_name ?? null,
+        nationality: metadata?.nationality ?? null,
       },
     },
   });
@@ -59,6 +60,7 @@ export async function signUp(
         email: user.email,
         first_name: metadata?.first_name ?? null,
         last_name: metadata?.last_name ?? null,
+        nationality: metadata?.nationality ?? null,
       });
 
     if (profileError) {

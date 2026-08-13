@@ -1,6 +1,6 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
-import { signUp } from '../lib/auth';
+import { signUp, signIn } from '../lib/auth'; // <-- Agregamos signIn aquí
 import { getSession } from "../lib/auth";
 
 const session = await getSession(Astro.cookies);
@@ -26,21 +26,32 @@ if (Astro.request.method === 'POST') {
     const lastName = String(formData.get('last_name') ?? '').trim();
     const email = String(formData.get('email') ?? '').trim();
     const password = String(formData.get('password') ?? '');
+    const nationality = String(formData.get('nationality') ?? '').trim();
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !nationality) {
       errorMessage = 'Bitte füllen Sie alle Felder aus.';
+    } else if (password.length < 6) {
+      errorMessage = 'Das Passwort muss mindestens 6 Zeichen lang sein.';
     } else {
-      // Pasamos first_name y last_name a la función signUp
-      const { error } = await signUp(email, password, { 
+      // 1. Creamos la cuenta
+      const { error: signUpError } = await signUp(email, password, { 
         first_name: firstName, 
-        last_name: lastName 
+        last_name: lastName,
+        nationality: nationality
       });
 
-      if (error) {
-        errorMessage = error.message ?? 'Das Konto konnte nicht erstellt werden.';
+      if (signUpError) {
+        errorMessage = signUpError.message ?? 'Das Konto konnte nicht erstellt werden.';
       } else {
-        successMessage =
-          'Konto erfolgreich erstellt. Bitte überprüfen Sie Ihre E-Mail oder melden Sie sich an.';
+        // 2. ¡EL TRUCO! Iniciamos sesión automáticamente usando los mismos datos
+        const { error: signInError } = await signIn(formData, Astro.cookies);
+        
+        if (signInError) {
+          // Si por alguna razón falla el auto-login, lo mandamos al login normal
+          return Astro.redirect('/login');
+        }
+
+        // 3. ¡Éxito total! Redirigimos al dashboard con la sesión ya iniciada
         return Astro.redirect('/dashboard');
       }
     }
@@ -69,7 +80,6 @@ if (Astro.request.method === 'POST') {
     action="/register"
     enctype="application/x-www-form-urlencoded"
   >
-    <!-- Nombre y Apellido en una fila de 2 columnas -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label for="first_name" class="block text-sm font-medium text-textMain/80 mb-1">
@@ -99,6 +109,41 @@ if (Astro.request.method === 'POST') {
       </div>
     </div>
 
+   <div>
+      <label for="nationality" class="block text-sm font-medium text-textMain/80 mb-1">
+        Nationalität
+      </label>
+      <select
+        id="nationality"
+        name="nationality"
+        required
+        class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain appearance-none"
+      >
+        <option value="" disabled selected>Bitte wählen...</option>
+        <option value="Argentinien">🇦🇷 Argentinien</option>
+        <option value="Bolivien">🇧🇴 Bolivien</option>
+        <option value="Chile">🇨🇱 Chile</option>
+        <option value="Deutschland">🇩🇪 Deutschland</option>
+        <option value="Ecuador">🇪🇨 Ecuador</option>
+        <option value="Frankreich">🇫🇷 Frankreich</option>
+        <option value="Griechenland">🇬🇷 Griechenland</option>
+        <option value="Italien">🇮🇹 Italien</option>
+        <option value="Kolumbien">🇨🇴 Kolumbien</option>
+        <option value="Mexiko">🇲🇽 Mexiko</option>
+        <option value="Österreich">🇦🇹 Österreich</option>
+        <option value="Peru">🇵🇪 Peru</option>
+        <option value="Polen">🇵🇱 Polen</option>
+        <option value="Portugal">🇵🇹 Portugal</option>
+        <option value="Rumänien">🇷🇴 Rumänien</option>
+        <option value="Schweiz">🇨🇭 Schweiz</option>
+        <option value="Spanien">🇪🇸 Spanien</option>
+        <option value="Türkei">🇹🇷 Türkei</option>
+        <option value="Ukraine">🇺🇦 Ukraine</option>
+        <option value="Venezuela">🇻🇪 Venezuela</option>
+        <option value="Andere">🌍 Andere</option>
+      </select>
+    </div>
+
     <div>
       <label for="email" class="block text-sm font-medium text-textMain/80 mb-1">
         E-Mail
@@ -117,15 +162,27 @@ if (Astro.request.method === 'POST') {
       <label for="password" class="block text-sm font-medium text-textMain/80 mb-1">
         Passwort
       </label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        required
-        minlength="6"
-        class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-        placeholder="Mindestens 6 Zeichen"
-      />
+      <div class="relative">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+          minlength="6"
+          class="w-full px-4 py-2 pr-12 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
+          placeholder="Mindestens 6 Zeichen"
+        />
+        <button
+          type="button"
+          class="toggle-password absolute inset-y-0 right-0 px-3 flex items-center text-textMain/40 hover:text-textMain/70 transition-colors focus:outline-none z-10 cursor-pointer"
+          data-target="password"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="flex items-start">
@@ -171,3 +228,34 @@ if (Astro.request.method === 'POST') {
     <a href="/login" class="text-primary hover:underline">Anmelden</a>
   </p>
 </AuthLayout>
+
+<script>
+  function setupPasswordToggles() {
+    const toggleButtons = document.querySelectorAll<HTMLButtonElement>('.toggle-password');
+    
+    toggleButtons.forEach(btn => {
+      const newBtn = btn.cloneNode(true) as HTMLButtonElement;
+      btn.replaceWith(newBtn);
+      
+      newBtn.addEventListener('click', (e: MouseEvent) => {
+        e.preventDefault(); 
+        
+        const targetId = newBtn.getAttribute('data-target');
+        if (!targetId) return;
+
+        const input = document.getElementById(targetId) as HTMLInputElement;
+        if (input) {
+          if (input.type === 'password') {
+            input.type = 'text';
+            newBtn.style.color = '#4AAED9'; 
+          } else {
+            input.type = 'password';
+            newBtn.style.color = ''; 
+          }
+        }
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupPasswordToggles);
+</script>
