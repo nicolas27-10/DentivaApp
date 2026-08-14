@@ -119,7 +119,9 @@ const navLinks = [
                   <p class="text-sm font-bold text-textMain truncate" title={user?.email}>{user?.email}</p>
                 </div>
                 <a href="/profile" class="block px-4 py-2 text-sm font-medium text-textMain hover:bg-slate-50 rounded-lg">Mein Profil</a>
-                <form method="POST" class="w-full m-0">
+                
+                {/* AÑADIMOS EL ID AL FORMULARIO */}
+                <form id="logout-form" method="POST" class="w-full m-0">
                   <button type="submit" class="w-full text-left px-4 py-2 text-sm font-medium text-error hover:bg-red-50 rounded-lg transition-colors">
                     Abmelden
                   </button>
@@ -135,6 +137,9 @@ const navLinks = [
 </header>
 
 <script>
+  // Importamos Supabase en el cliente (ajusta la ruta según la ubicación de este archivo)
+  import { supabase } from '../lib/supabaseClient';
+
   function initScrollspy() {
     const navLinks = document.querySelectorAll('.nav-item');
     const sections = document.querySelectorAll('section[id]');
@@ -167,5 +172,26 @@ const navLinks = [
     sections.forEach(section => observer.observe(section));
   }
 
-  document.addEventListener('astro:page-load', initScrollspy);
+  // Nueva función para interceptar el logout
+  function initLogout() {
+    const logoutForm = document.getElementById('logout-form') as HTMLFormElement;
+    
+    if (logoutForm) {
+      logoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Detenemos el envío automático del formulario
+        
+        // 1. Borramos la sesión en el navegador (para evitar el bucle de auto-login)
+        await supabase.auth.signOut();
+        
+        // 2. Reanudamos el envío al servidor Astro para que borre las cookies
+        logoutForm.submit();
+      });
+    }
+  }
+
+  // Inicializamos ambas funciones al cargar la página
+  document.addEventListener('astro:page-load', () => {
+    initScrollspy();
+    initLogout();
+  });
 </script>

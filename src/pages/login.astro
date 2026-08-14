@@ -27,7 +27,7 @@ if (Astro.request.method === 'POST') {
       errorMessage = error.message ?? 'Wir konnten uns nicht einloggen.';
     } else {
       successMessage = 'Anmeldung erfolgreich.';
-      return Astro.redirect('/dashboard')
+      return Astro.redirect('/dashboard');
     }
   }
 }
@@ -100,11 +100,26 @@ if (Astro.request.method === 'POST') {
 </AuthLayout>
 
 <script>
+  import { supabase } from '../lib/supabaseClient';
+
+  // 1. Escuchar los cambios de sesión (El puente para la confirmación de correo)
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      // Guardamos las cookies para que Astro las pueda leer
+      document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=31536000`;
+      document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=31536000`;
+      
+      // Redirigimos al dashboard automáticamente
+      window.location.href = '/dashboard';
+    }
+  });
+
+  // 2. Lógica del ojito de la contraseña
   function setupPasswordToggles() {
     const toggleButtons = document.querySelectorAll<HTMLButtonElement>('.toggle-password');
     
     toggleButtons.forEach(btn => {
-      // Reemplazamos el botón por un clon para limpiar eventos viejos (Truco pro para Astro)
+      // Reemplazamos el botón por un clon para limpiar eventos viejos
       const newBtn = btn.cloneNode(true) as HTMLButtonElement;
       btn.replaceWith(newBtn);
       

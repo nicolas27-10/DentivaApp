@@ -26,7 +26,7 @@ export async function signIn(formData: FormData, cookies: any) {
   return { data, error };
 }
 
-// 2. Modificamos signUp para registrar usuario y guardar first_name / last_name
+// 2. Modificamos signUp para registrar usuario y guardar metadatos
 export async function signUp(
   email: string,
   password: string,
@@ -49,25 +49,13 @@ export async function signUp(
     return { error };
   }
 
+  // 🛑 AQUÍ BORRAMOS LA INSERCIÓN MANUAL A 'profiles'
+  // El Trigger de SQL (handle_new_user) hará esto automáticamente en la base de datos.
+
   const user = data.user;
 
   if (user) {
-    // Guardar el perfil en la tabla de Supabase 'profiles'
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: user.id,
-        email: user.email,
-        first_name: metadata?.first_name ?? null,
-        last_name: metadata?.last_name ?? null,
-        nationality: metadata?.nationality ?? null,
-      });
-
-    if (profileError) {
-      return { error: profileError };
-    }
-
-    // Si Supabase devuelve sesión tras el registro, la guardamos
+    // Si Supabase devuelve sesión tras el registro (ej: cuando la confirmación de email está apagada), la guardamos
     if (data.session && cookies) {
       cookies.set('sb-access-token', data.session.access_token, { path: '/' });
       cookies.set('sb-refresh-token', data.session.refresh_token, { path: '/' });

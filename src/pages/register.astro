@@ -1,6 +1,6 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
-import { signUp, signIn } from '../lib/auth'; // <-- Agregamos signIn aquí
+import { signUp } from '../lib/auth';
 import { getSession } from "../lib/auth";
 
 const session = await getSession(Astro.cookies);
@@ -19,7 +19,7 @@ if (Astro.request.method === 'POST') {
     !contentType.includes('application/x-www-form-urlencoded') &&
     !contentType.includes('multipart/form-data')
   ) {
-    errorMessage = 'Das Formular konnte nicht verarbeitet werden (ungültiger Content-Type).';
+    errorMessage = 'Das Formular konnte nicht verarbeitet werden.';
   } else {
     const formData = await Astro.request.formData();
     const firstName = String(formData.get('first_name') ?? '').trim();
@@ -33,7 +33,6 @@ if (Astro.request.method === 'POST') {
     } else if (password.length < 6) {
       errorMessage = 'Das Passwort muss mindestens 6 Zeichen lang sein.';
     } else {
-      // 1. Creamos la cuenta
       const { error: signUpError } = await signUp(email, password, { 
         first_name: firstName, 
         last_name: lastName,
@@ -43,16 +42,7 @@ if (Astro.request.method === 'POST') {
       if (signUpError) {
         errorMessage = signUpError.message ?? 'Das Konto konnte nicht erstellt werden.';
       } else {
-        // 2. ¡EL TRUCO! Iniciamos sesión automáticamente usando los mismos datos
-        const { error: signInError } = await signIn(formData, Astro.cookies);
-        
-        if (signInError) {
-          // Si por alguna razón falla el auto-login, lo mandamos al login normal
-          return Astro.redirect('/login');
-        }
-
-        // 3. ¡Éxito total! Redirigimos al dashboard con la sesión ya iniciada
-        return Astro.redirect('/dashboard');
+        successMessage = 'success'; // Marcamos como éxito
       }
     }
   }
@@ -60,202 +50,119 @@ if (Astro.request.method === 'POST') {
 ---
 
 <AuthLayout title="Registrieren - Dentiva">
-  <h1 class="text-2xl font-bold text-textMain mb-6">Konto erstellen</h1>
+  
+  <!-- Animación de entrada -->
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  </style>
 
-  {errorMessage && (
-    <p class="mb-4 text-sm text-error bg-error/10 border border-error/30 rounded-lg px-4 py-3">
-      {errorMessage}
-    </p>
+  {successMessage ? (
+    <!-- VISTA DE ÉXITO (Sin formulario) -->
+    <div class="animate-fade-in text-center p-8 bg-card border border-border rounded-2xl shadow-lg">
+      <div class="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h2 class="text-2xl font-bold text-textMain mb-2">Fast geschafft!</h2>
+      <p class="text-textMain/70 mb-8 max-w-sm mx-auto">
+        Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Bitte klicken Sie auf den Link in der E-Mail, um Ihre Registrierung abzuschließen.
+      </p>
+      {/* <a href="/login" class="inline-block w-full py-3 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors">
+        Zum Login
+      </a> */}
+    </div>
+  ) : (
+    <!-- VISTA DEL FORMULARIO (Se muestra solo si NO hubo éxito) -->
+    <div class="animate-fade-in">
+      <h1 class="text-2xl font-bold text-textMain mb-6">Konto erstellen</h1>
+
+      {errorMessage && (
+        <p class="mb-4 text-sm text-error bg-error/10 border border-error/30 rounded-lg px-4 py-3">
+          {errorMessage}
+        </p>
+      )}
+
+      <form class="space-y-4" method="post" action="/register">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="first_name" class="block text-sm font-medium text-textMain/80 mb-1">Vorname</label>
+            <input type="text" id="first_name" name="first_name" required class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain" placeholder="Max" />
+          </div>
+          <div>
+            <label for="last_name" class="block text-sm font-medium text-textMain/80 mb-1">Nachname</label>
+            <input type="text" id="last_name" name="last_name" required class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain" placeholder="Mustermann" />
+          </div>
+        </div>
+
+        <div>
+          <label for="nationality" class="block text-sm font-medium text-textMain/80 mb-1">Nationalität</label>
+          <select id="nationality" name="nationality" required class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain appearance-none">
+            <option value="" disabled selected>Bitte wählen...</option>
+            <option value="Argentinien">🇦🇷 Argentinien</option>
+            <option value="Bolivien">🇧🇴 Bolivien</option>
+            <option value="Chile">🇨🇱 Chile</option>
+            <option value="Deutschland">🇩🇪 Deutschland</option>
+            <option value="Ecuador">🇪🇨 Ecuador</option>
+            <option value="Frankreich">🇫🇷 Frankreich</option>
+            <option value="Griechenland">🇬🇷 Griechenland</option>
+            <option value="Italien">🇮🇹 Italien</option>
+            <option value="Kolumbien">🇨🇴 Kolumbien</option>
+            <option value="Mexiko">🇲🇽 Mexiko</option>
+            <option value="Österreich">🇦🇹 Österreich</option>
+            <option value="Peru">🇵🇪 Peru</option>
+            <option value="Polen">🇵🇱 Polen</option>
+            <option value="Portugal">🇵🇹 Portugal</option>
+            <option value="Rumänien">🇷🇴 Rumänien</option>
+            <option value="Schweiz">🇨🇭 Schweiz</option>
+            <option value="Spanien">🇪🇸 Spanien</option>
+            <option value="Türkei">🇹🇷 Türkei</option>
+            <option value="Ukraine">🇺🇦 Ukraine</option>
+            <option value="Venezuela">🇻🇪 Venezuela</option>
+            <option value="Andere">🌍 Andere</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-textMain/80 mb-1">E-Mail</label>
+          <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain" placeholder="deine@email.de" />
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-textMain/80 mb-1">Passwort</label>
+          <div class="relative">
+            <input type="password" id="password" name="password" required minlength="6" class="w-full px-4 py-2 pr-12 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain" placeholder="Mindestens 6 Zeichen" />
+            <button type="button" class="toggle-password absolute inset-y-0 right-0 px-3 flex items-center text-textMain/40 hover:text-textMain/70 transition-colors focus:outline-none z-10 cursor-pointer" data-target="password">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 px-4 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-colors">Registrieren</button>
+      </form>
+    </div>
   )}
 
-  {successMessage && (
-    <p class="mb-4 text-sm text-success bg-success/10 border border-success/30 rounded-lg px-4 py-3">
-      {successMessage}
-    </p>
-  )}
-
-  <form
-    class="space-y-4"
-    method="post"
-    action="/register"
-    enctype="application/x-www-form-urlencoded"
-  >
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label for="first_name" class="block text-sm font-medium text-textMain/80 mb-1">
-          Vorname
-        </label>
-        <input
-          type="text"
-          id="first_name"
-          name="first_name"
-          required
-          class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-          placeholder="Max"
-        />
-      </div>
-      <div>
-        <label for="last_name" class="block text-sm font-medium text-textMain/80 mb-1">
-          Nachname
-        </label>
-        <input
-          type="text"
-          id="last_name"
-          name="last_name"
-          required
-          class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-          placeholder="Mustermann"
-        />
-      </div>
-    </div>
-
-   <div>
-      <label for="nationality" class="block text-sm font-medium text-textMain/80 mb-1">
-        Nationalität
-      </label>
-      <select
-        id="nationality"
-        name="nationality"
-        required
-        class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain appearance-none"
-      >
-        <option value="" disabled selected>Bitte wählen...</option>
-        <option value="Argentinien">🇦🇷 Argentinien</option>
-        <option value="Bolivien">🇧🇴 Bolivien</option>
-        <option value="Chile">🇨🇱 Chile</option>
-        <option value="Deutschland">🇩🇪 Deutschland</option>
-        <option value="Ecuador">🇪🇨 Ecuador</option>
-        <option value="Frankreich">🇫🇷 Frankreich</option>
-        <option value="Griechenland">🇬🇷 Griechenland</option>
-        <option value="Italien">🇮🇹 Italien</option>
-        <option value="Kolumbien">🇨🇴 Kolumbien</option>
-        <option value="Mexiko">🇲🇽 Mexiko</option>
-        <option value="Österreich">🇦🇹 Österreich</option>
-        <option value="Peru">🇵🇪 Peru</option>
-        <option value="Polen">🇵🇱 Polen</option>
-        <option value="Portugal">🇵🇹 Portugal</option>
-        <option value="Rumänien">🇷🇴 Rumänien</option>
-        <option value="Schweiz">🇨🇭 Schweiz</option>
-        <option value="Spanien">🇪🇸 Spanien</option>
-        <option value="Türkei">🇹🇷 Türkei</option>
-        <option value="Ukraine">🇺🇦 Ukraine</option>
-        <option value="Venezuela">🇻🇪 Venezuela</option>
-        <option value="Andere">🌍 Andere</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="email" class="block text-sm font-medium text-textMain/80 mb-1">
-        E-Mail
-      </label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        required
-        class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-        placeholder="deine@email.de"
-      />
-    </div>
-
-    <div>
-      <label for="password" class="block text-sm font-medium text-textMain/80 mb-1">
-        Passwort
-      </label>
-      <div class="relative">
-        <input
-          type="password"
-          id="password"
-          name="password"
-          required
-          minlength="6"
-          class="w-full px-4 py-2 pr-12 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-card text-textMain"
-          placeholder="Mindestens 6 Zeichen"
-        />
-        <button
-          type="button"
-          class="toggle-password absolute inset-y-0 right-0 px-3 flex items-center text-textMain/40 hover:text-textMain/70 transition-colors focus:outline-none z-10 cursor-pointer"
-          data-target="password"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="flex items-start">
-      <div class="flex h-5 items-center">
-        <input
-          id="terms"
-          name="terms"
-          type="checkbox"
-          required
-          class="h-4 w-4 cursor-pointer rounded border-border bg-background text-primary focus:ring-primary"
-        />
-      </div>
-      <div class="ml-3 text-sm">
-        <label for="terms" class="cursor-pointer font-medium text-textMain/80">
-          Ich akzeptiere die{' '}
-          <a href="/agb" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-            AGB
-          </a>{' '}
-          und habe die{' '}
-          <a
-            href="/datenschutz"
-            class="text-primary hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Datenschutzerklärung
-          </a>{' '}
-          zur Kenntnis genommen.
-        </label>
-      </div>
-    </div>
-
-    <button
-      type="submit"
-      class="w-full py-3 px-4 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-colors"
-    >
-      Registrieren
-    </button>
-  </form>
-
-  <p class="mt-4 text-sm text-textMain/70">
-    Haben Sie bereits ein Konto?{' '}
-    <a href="/login" class="text-primary hover:underline">Anmelden</a>
-  </p>
 </AuthLayout>
 
 <script>
-  function setupPasswordToggles() {
+  // Tu script de togglePassword se mantiene aquí...
+  function setupAuthScripts() {
     const toggleButtons = document.querySelectorAll<HTMLButtonElement>('.toggle-password');
-    
     toggleButtons.forEach(btn => {
       const newBtn = btn.cloneNode(true) as HTMLButtonElement;
       btn.replaceWith(newBtn);
-      
       newBtn.addEventListener('click', (e: MouseEvent) => {
-        e.preventDefault(); 
-        
-        const targetId = newBtn.getAttribute('data-target');
-        if (!targetId) return;
-
-        const input = document.getElementById(targetId) as HTMLInputElement;
+        e.preventDefault();
+        const input = document.getElementById(newBtn.getAttribute('data-target')!) as HTMLInputElement;
         if (input) {
-          if (input.type === 'password') {
-            input.type = 'text';
-            newBtn.style.color = '#4AAED9'; 
-          } else {
-            input.type = 'password';
-            newBtn.style.color = ''; 
-          }
+          input.type = input.type === 'password' ? 'text' : 'password';
+          newBtn.style.color = input.type === 'text' ? '#4AAED9' : '';
         }
       });
     });
   }
-
-  document.addEventListener('astro:page-load', setupPasswordToggles);
+  document.addEventListener('astro:page-load', setupAuthScripts);
 </script>
