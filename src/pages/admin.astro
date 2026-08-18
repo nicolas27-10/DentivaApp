@@ -1,0 +1,253 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { getSession } from '../lib/auth';
+import { supabase } from '../lib/supabaseClient';
+
+const user = await getSession(Astro.cookies);
+
+// 1. Verificación de sesión activa
+if (!user) {
+  return Astro.redirect('/login');
+}
+
+// 2. Control de acceso: solo rol 'admin'
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('role')
+  .eq('id', user.id)
+  .single();
+
+if (profile?.role !== 'admin') {
+  return Astro.redirect('/dashboard');
+}
+
+// 3. Obtener métricas consolidadas desde la función RPC
+const { data: metrics, error } = await supabase.rpc('get_admin_metrics');
+
+if (error) {
+  console.error('Error al cargar métricas de administración:', error);
+}
+
+// Variables desglosadas con valores por defecto
+const totalUsers = metrics?.total_users ?? 0;
+const newUsersWeek = metrics?.registered_last_7_days ?? 0;
+const premiumUsers = metrics?.total_premium_users ?? 0;
+const usersWithAttempts = metrics?.users_with_attempts ?? 0;
+const usersWithProgress = metrics?.users_with_progress ?? 0;
+const usersCompletedModule = metrics?.users_completed_module ?? 0;
+const totalExercisesAttempted = metrics?.total_exercises_attempted ?? 0;
+
+const readyForProUsers = metrics?.ready_for_pro_users ?? [];
+const topNationalities = metrics?.users_by_nationality ?? [];
+const recentUsers = metrics?.recent_signups ?? [];
+
+// Tasas calculadas
+const activationRate = totalUsers > 0 ? Math.round((usersWithAttempts / totalUsers) * 100) : 0;
+const paidConversionRate = totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(1) : "0.0";
+---
+
+<DashboardLayout title="Admin Overview - Dentiva">
+  <div class="max-w-6xl mx-auto p-6 space-y-8">
+    
+    <!-- Encabezado Principal -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-textMain">Panel de Control (Admin)</h1>
+        <p class="text-textMain/70 text-sm mt-1">Métricas de adopción, interacción y conversión de usuarios.</p>
+      </div>
+      <span class="px-3 py-1 bg-accent/10 text-accent font-semibold text-xs rounded-full border border-accent/20">
+        Admin Privado
+      </span>
+    </div>
+
+    <!-- KPIs Rápidos -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
+        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">Total Registrados</p>
+        <p class="text-3xl font-bold text-textMain mt-2">{totalUsers}</p>
+      </div>
+
+      <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
+        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">Nuevos (Últimos 7 días)</p>
+        <p class="text-3xl font-bold text-primary mt-2">+{newUsersWeek}</p>
+      </div>
+
+      <!-- KPI Premium Destacado -->
+      <div class="bg-card border border-primary/30 p-5 rounded-2xl shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start">
+          <p class="text-xs font-medium text-primary uppercase tracking-wider">Usuarios Premium</p>
+          <span class="text-xs px-2 py-0.5 bg-primary/10 text-primary font-semibold rounded">
+            {paidConversionRate}% conv.
+          </span>
+        </div>
+        <p class="text-3xl font-bold text-primary mt-2">{premiumUsers}</p>
+      </div>
+
+      <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
+        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">% Activación (Free)</p>
+        <p class="text-3xl font-bold text-success mt-2">{activationRate}%</p>
+      </div>
+    </div>
+
+    <!-- Embudo de Retención y Uso -->
+    <div class="bg-card border border-border rounded-2xl p-6 shadow-sm">
+      <h2 class="text-lg font-bold text-textMain mb-4">Embudo de Uso y Retención</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <div class="p-4 bg-muted/40 rounded-xl border border-border/50">
+          <p class="text-xs text-textMain/60 font-medium">1. Intentaron Ejercicios</p>
+          <p class="text-2xl font-bold text-textMain mt-1">{usersWithAttempts} <span class="text-xs font-normal text-textMain/60">usuarios</span></p>
+          <p class="text-xs text-textMain/50 mt-1">{totalExercisesAttempted} respuestas registradas en total</p>
+        </div>
+
+        <div class="p-4 bg-muted/40 rounded-xl border border-border/50">
+          <p class="text-xs text-textMain/60 font-medium">2. Avanzaron en Módulos</p>
+          <p class="text-2xl font-bold text-textMain mt-1">{usersWithProgress} <span class="text-xs font-normal text-textMain/60">usuarios</span></p>
+          <p class="text-xs text-textMain/50 mt-1">Con progreso mayor a 0%</p>
+        </div>
+
+        <div class="p-4 bg-accent/5 rounded-xl border border-accent/20">
+          <p class="text-xs text-accent font-medium">3. Módulos Completados</p>
+          <p class="text-2xl font-bold text-accent mt-1">{usersCompletedModule} <span class="text-xs font-normal text-accent/70">usuarios</span></p>
+          <p class="text-xs text-accent/60 mt-1">Terminaron al menos 1 módulo al 100%</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Leads Calientes (Usuarios Listos para Suscripción) -->
+    <div class="bg-card border border-accent/30 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-textMain flex items-center gap-2">
+            🎯 Usuarios Listos para Suscripción (Leads Calientes)
+          </h2>
+          <p class="text-xs text-textMain/70 mt-0.5">
+            Usuarios en plan Free que ya completaron al menos un módulo entero y conocen el valor de la herramienta.
+          </p>
+        </div>
+        <span class="text-xs px-2.5 py-1 bg-accent/10 text-accent font-semibold rounded-full border border-accent/20">
+          {readyForProUsers.length} potenciales
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-textMain">
+          <thead class="text-xs text-textMain/50 uppercase border-b border-border">
+            <tr>
+              <th class="py-3 px-2">Usuario</th>
+              <th class="py-3 px-2">Nacionalidad</th>
+              <th class="py-3 px-2 text-center">Módulos Completados</th>
+              <th class="py-3 px-2 text-right">Acción Sugerida</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border/50">
+            {readyForProUsers.length > 0 ? (
+              readyForProUsers.map((u: any) => (
+                <tr>
+                  <td class="py-3 px-2">
+                    <p class="font-medium">{u.first_name || 'Sin nombre'} {u.last_name || ''}</p>
+                    <a href={`mailto:${u.email}`} class="text-xs text-primary hover:underline">{u.email}</a>
+                  </td>
+                  <td class="py-3 px-2">{u.nationality || 'No especificada'}</td>
+                  <td class="py-3 px-2 text-center">
+                    <span class="px-2.5 py-0.5 bg-success/10 text-success font-semibold text-xs rounded-full border border-success/20">
+                      {u.completed_modules_count} {u.completed_modules_count === 1 ? 'módulo' : 'módulos'}
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right">
+                    <a 
+                      href={`mailto:${u.email}?subject=Dein%20Feedback%20zu%20Dentiva&body=Hallo%20${encodeURIComponent(u.first_name || '')},%0A%0Agroßartige%20Arbeit%20beim%20Abschließen%20deines%20Moduls!`} 
+                      class="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors font-medium"
+                    >
+                      Enviar Oferta / Feedback
+                    </a>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colspan="4" class="py-4 text-center text-textMain/50">
+                  Aún no hay usuarios Free que hayan completado un módulo al 100%.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tablas y Desglose Inferior -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Últimos Usuarios Registrados -->
+      <div class="lg:col-span-2 bg-card border border-border rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-textMain mb-4">Últimos usuarios registrados</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-textMain">
+            <thead class="text-xs text-textMain/50 uppercase border-b border-border">
+              <tr>
+                <th class="py-3 px-2">Usuario</th>
+                <th class="py-3 px-2">Plan</th>
+                <th class="py-3 px-2">Nacionalidad</th>
+                <th class="py-3 px-2">Fecha</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border/50">
+              {recentUsers.length > 0 ? (
+                recentUsers.map((u: any) => (
+                  <tr>
+                    <td class="py-3 px-2">
+                      <p class="font-medium">{u.first_name || 'Sin nombre'} {u.last_name || ''}</p>
+                      <p class="text-xs text-textMain/60">{u.email}</p>
+                    </td>
+                    <td class="py-3 px-2">
+                      {u.is_premium ? (
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                          PRO
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-textMain/60">
+                          Free
+                        </span>
+                      )}
+                    </td>
+                    <td class="py-3 px-2">{u.nationality || 'No especificada'}</td>
+                    <td class="py-3 px-2 text-xs text-textMain/60">
+                      {new Date(u.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colspan="4" class="py-4 text-center text-textMain/50">No hay registros recientes</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Nacionalidades -->
+      <div class="bg-card border border-border rounded-2xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-textMain mb-4">Top Nacionalidades</h2>
+        <div class="space-y-3">
+          {topNationalities.length > 0 ? (
+            topNationalities.map((item: any) => (
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-textMain/80">{item.nationality}</span>
+                <span class="font-bold text-textMain bg-muted px-2 py-0.5 rounded text-xs">
+                  {item.count} {item.count === 1 ? 'usuario' : 'usuarios'}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p class="text-sm text-textMain/50">Sin datos de nacionalidad aún</p>
+          )}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</DashboardLayout>

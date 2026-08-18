@@ -1,32 +1,24 @@
 ---
-import { getSession, signOut } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabaseClient";
 
 const user = await getSession(Astro.cookies);
 const currentPath = Astro.url.pathname;
 let avatarUrl: string | null = null;
 let isPremium: boolean = false;
+let isAdmin: boolean = false;
 
-// 1. Manejo de cierre de sesión
-if (Astro.request.method === "POST") {
-  try {
-    await signOut(Astro.cookies);
-  } catch (error) {
-    console.error("Error silencioso al cerrar sesión:", error);
-  }
-  return Astro.redirect("/login");
-}
-
-// 2. Consulta combinada de Perfil (Avatar y Estado Premium)
+// Consulta combinada de Perfil (Avatar, Estado Premium y Rol)
 if (user?.id) {
   const { data: profile } = await supabase
     .from("profiles")
-    .select("avatar_url, is_premium")
+    .select("avatar_url, is_premium, role")
     .eq("id", user.id)
     .single();
 
   avatarUrl = profile?.avatar_url ?? null;
   isPremium = profile?.is_premium ?? false;
+  isAdmin = profile?.role === "admin";
 }
 
 const navLinks = [
@@ -112,20 +104,54 @@ const navLinks = [
               }
             </div>
 
-            <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-              <div class="p-2">
-                <div class="px-4 py-2 border-b border-border mb-1">
-                  <p class="text-xs text-textMain/60">Angemeldet als</p>
+            <!-- Menú Desplegable -->
+            <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div class="p-2 space-y-1">
+                
+                <!-- Info Usuario -->
+                <div class="px-3 py-2 border-b border-border/70 mb-1">
+                  <p class="text-[11px] text-textMain/50 uppercase tracking-wider font-semibold">Angemeldet als</p>
                   <p class="text-sm font-bold text-textMain truncate" title={user?.email}>{user?.email}</p>
                 </div>
-                <a href="/profile" class="block px-4 py-2 text-sm font-medium text-textMain hover:bg-slate-50 rounded-lg">Mein Profil</a>
+
+                <!-- OPCIÓN EXCLUSIVA PARA ADMINS -->
+                {isAdmin && (
+                  <a 
+                    href="/admin" 
+                    class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                  >
+                    <svg class="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Admin Dashboard
+                  </a>
+                )}
+
+                <!-- Enlace a Perfil -->
+                <a 
+                  href="/profile" 
+                  class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-textMain/80 hover:text-textMain hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  <svg class="w-4 h-4 text-textMain/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Mein Profil
+                </a>
                 
-                {/* AÑADIMOS EL ID AL FORMULARIO */}
-                <form id="logout-form" method="POST" class="w-full m-0">
-                  <button type="submit" class="w-full text-left px-4 py-2 text-sm font-medium text-error hover:bg-red-50 rounded-lg transition-colors">
-                    Abmelden
-                  </button>
-                </form>
+                <div class="border-t border-border/70 my-1"></div>
+
+                <!-- Botón de Cerrar Sesión Directo (Sin form POST problemático) -->
+                <button 
+                  type="button" 
+                  id="logout-btn"
+                  class="flex items-center gap-2 w-full text-left px-3 py-2 text-sm font-medium text-error hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                >
+                  <svg class="w-4 h-4 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Abmelden
+                </button>
+
               </div>
             </div>
           </div>
@@ -137,7 +163,6 @@ const navLinks = [
 </header>
 
 <script>
-  // Importamos Supabase en el cliente (ajusta la ruta según la ubicación de este archivo)
   import { supabase } from '../lib/supabaseClient';
 
   function initScrollspy() {
@@ -172,26 +197,36 @@ const navLinks = [
     sections.forEach(section => observer.observe(section));
   }
 
-  // Nueva función para interceptar el logout
   function initLogout() {
-    const logoutForm = document.getElementById('logout-form') as HTMLFormElement;
+    const logoutBtn = document.getElementById('logout-btn');
     
-    if (logoutForm) {
-      logoutForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Detenemos el envío automático del formulario
+    if (logoutBtn) {
+      logoutBtn.onclick = async (e) => {
+        e.preventDefault();
         
-        // 1. Borramos la sesión en el navegador (para evitar el bucle de auto-login)
-        await supabase.auth.signOut();
+        try {
+          // 1. Cerramos la sesión en el cliente de Supabase
+          await supabase.auth.signOut();
+        } catch (err) {
+          console.error("Error cerrando sesión en Supabase:", err);
+        }
         
-        // 2. Reanudamos el envío al servidor Astro para que borre las cookies
-        logoutForm.submit();
-      });
+        // 2. Eliminamos las cookies de sesión
+        document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        
+        // 3. Redirigimos de forma limpia e instantánea al login
+        window.location.replace('/login');
+      };
     }
   }
 
-  // Inicializamos ambas funciones al cargar la página
   document.addEventListener('astro:page-load', () => {
     initScrollspy();
     initLogout();
   });
+  
+  // Ejecución inicial directa
+  initScrollspy();
+  initLogout();
 </script>
