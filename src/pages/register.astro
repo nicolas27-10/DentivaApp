@@ -35,14 +35,14 @@ if (Astro.request.method === 'POST') {
     } else {
       const { error: signUpError } = await signUp(email, password, { 
         first_name: firstName, 
-        last_name: lastName,
-        nationality: nationality
+        last_name: lastName, 
+        nationality: nationality 
       });
 
       if (signUpError) {
         errorMessage = signUpError.message ?? 'Das Konto konnte nicht erstellt werden.';
       } else {
-        successMessage = 'success'; // Marcamos como éxito
+        successMessage = 'success';
       }
     }
   }
@@ -51,17 +51,22 @@ if (Astro.request.method === 'POST') {
 
 <AuthLayout title="Registrieren - Dentiva">
   
-  <!-- Animación de entrada -->
   <style>
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+
+    /* Oculta los controles nativos que se sobreponen tras el autocompletado */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none !important;
+    }
   </style>
 
   {successMessage ? (
-    <!-- VISTA DE ÉXITO (Sin formulario) -->
+    <!-- VISTA DE ÉXITO -->
     <div class="animate-fade-in text-center p-8 bg-card border border-border rounded-2xl shadow-lg">
       <div class="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto mb-6">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -88,7 +93,7 @@ if (Astro.request.method === 'POST') {
 
     </div>
   ) : (
-    <!-- VISTA DEL FORMULARIO (Se muestra solo si NO hubo éxito) -->
+    <!-- VISTA DEL FORMULARIO -->
     <div class="animate-fade-in">
       <h1 class="text-2xl font-bold text-textMain mb-6">Konto erstellen</h1>
 
@@ -145,10 +150,26 @@ if (Astro.request.method === 'POST') {
 
         <div>
           <label for="password" class="block text-sm font-medium text-textMain/80 mb-1">Passwort</label>
-          <div class="relative">
-            <input type="password" id="password" name="password" required minlength="6" class="w-full px-4 py-2 pr-12 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain" placeholder="Mindestens 6 Zeichen" />
-            <button type="button" class="toggle-password absolute inset-y-0 right-0 px-3 flex items-center text-textMain/40 hover:text-textMain/70 transition-colors focus:outline-none z-10 cursor-pointer" data-target="password">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <div class="relative flex items-center">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required 
+              minlength="6" 
+              class="w-full px-4 py-2 pr-12 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain relative z-0" 
+              placeholder="Mindestens 6 Zeichen" 
+            />
+            <button 
+              type="button" 
+              class="toggle-password absolute right-2 top-1/2 -translate-y-1/2 p-2 flex items-center text-textMain/40 hover:text-textMain/70 transition-colors focus:outline-none z-30 cursor-pointer" 
+              data-target="password"
+              aria-label="Passwort anzeigen"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 pointer-events-none">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </button>
           </div>
         </div>
@@ -156,7 +177,7 @@ if (Astro.request.method === 'POST') {
         <button type="submit" class="w-full py-3 px-4 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-colors">Registrieren</button>
       </form>
 
-      <!-- ENLACE AL LOGIN RECUPERADO -->
+      <!-- ENLACE AL LOGIN -->
       <p class="mt-4 text-sm text-center text-textMain/70">
         Hast du bereits ein Konto? <a href="/login" class="text-primary hover:underline">Hier einloggen</a>
       </p>
@@ -167,30 +188,25 @@ if (Astro.request.method === 'POST') {
 </AuthLayout>
 
 <script>
-  function initPasswordToggle() {
-    // Delegación global de eventos: escucha clics en cualquier parte del documento
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
+  function toggleInputVisibility(button: HTMLButtonElement) {
+    const targetId = button.getAttribute('data-target');
+    if (!targetId) return;
 
-      // Busca si el clic ocurrió dentro o sobre el botón con clase .toggle-password
-      const btn = target.closest('.toggle-password') as HTMLButtonElement | null;
-      if (!btn) return;
+    const input = document.getElementById(targetId) as HTMLInputElement | null;
+    if (!input) return;
 
-      e.preventDefault();
-
-      const targetId = btn.getAttribute('data-target');
-      if (!targetId) return;
-
-      const input = document.getElementById(targetId) as HTMLInputElement | null;
-      if (input) {
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        btn.style.color = isPassword ? '#4AAED9' : '';
-      }
-    });
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+    button.style.color = isPassword ? '#4AAED9' : '';
   }
 
-  // Se ejecuta una sola vez al cargar la página
-  initPasswordToggle();
+  // Intercepta la pulsación táctil o clic de mouse antes de que el navegador aplique su menú nativo
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target as HTMLElement | null;
+    const btn = target?.closest('.toggle-password') as HTMLButtonElement | null;
+    if (btn) {
+      e.preventDefault();
+      toggleInputVisibility(btn);
+    }
+  });
 </script>
