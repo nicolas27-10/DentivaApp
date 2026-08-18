@@ -167,30 +167,30 @@ if (Astro.request.method === 'POST') {
 </AuthLayout>
 
 <script>
-  function setupPasswordToggle() {
-    const toggleButtons = document.querySelectorAll('.toggle-password');
-    
-    toggleButtons.forEach((element) => {
-      // Le decimos a TypeScript que esto es específicamente un botón
-      const btn = element as HTMLButtonElement;
-      
-      btn.onclick = (e) => {
-        e.preventDefault();
-        
-        const targetId = btn.getAttribute('data-target');
-        if (!targetId) return;
-        
-        // Le decimos a TypeScript que esto es específicamente un input
-        const input = document.getElementById(targetId) as HTMLInputElement;
-        
-        if (input) {
-          input.type = input.type === 'password' ? 'text' : 'password';
-          btn.style.color = input.type === 'text' ? '#4AAED9' : '';
-        }
-      };
+  function initPasswordToggle() {
+    // Delegación global de eventos: escucha clics en cualquier parte del documento
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Busca si el clic ocurrió dentro o sobre el botón con clase .toggle-password
+      const btn = target.closest('.toggle-password') as HTMLButtonElement | null;
+      if (!btn) return;
+
+      e.preventDefault();
+
+      const targetId = btn.getAttribute('data-target');
+      if (!targetId) return;
+
+      const input = document.getElementById(targetId) as HTMLInputElement | null;
+      if (input) {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.style.color = isPassword ? '#4AAED9' : '';
+      }
     });
   }
 
-  document.addEventListener('astro:page-load', setupPasswordToggle);
-  setupPasswordToggle();
+  // Se ejecuta una sola vez al cargar la página
+  initPasswordToggle();
 </script>
