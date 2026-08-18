@@ -95,15 +95,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || Astro.url);
     </script>
 
     <!-- Script del Puente de Autenticación y Redirección -->
+    <!-- Script de Autenticación para MainLayout (Solo redirige al confirmar correo) -->
     <script>
       import { supabase } from '../lib/supabaseClient';
 
       function setupAuthBridge() {
         const hash = window.location.hash;
-        const path = window.location.pathname;
         const loader = document.getElementById('global-loader');
 
-        // Función para mostrar tu animación de carga
         const showLoader = () => {
           if (loader) {
             loader.classList.remove('opacity-0', 'pointer-events-none');
@@ -111,33 +110,33 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || Astro.url);
           }
         };
 
-        // 1. Si la URL trae un código de correo, mostramos el loader INMEDIATAMENTE
-        if (hash.includes('access_token') || hash.includes('type=signup')) {
+        const isAuthLink = hash.includes('access_token') || hash.includes('type=signup') || hash.includes('type=recovery');
+
+        // 1. Solo mostramos loader si viene desde un enlace del correo
+        if (isAuthLink) {
           showLoader();
         }
 
         const handleSession = (session: any) => {
           if (!session) return;
-          
+
           // Guardamos las cookies para Astro
           document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=31536000; SameSite=Lax`;
           document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=31536000; SameSite=Lax`;
 
-          // Si está en ruta pública, activamos el loader y redirigimos
-          if (path === '/' || path === '/login' || path === '/register') {
+          // Redirigir al dashboard ÚNICAMENTE si viene del correo
+          if (isAuthLink) {
             showLoader();
             window.location.replace('/dashboard');
           }
         };
 
-        // 2. Escuchamos mientras Supabase procesa silenciosamente el código del correo
         supabase.auth.onAuthStateChange((event, session) => {
           if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
             handleSession(session);
           }
         });
 
-        // 3. Revisión inicial proactiva (por si navega directamente ya estando logueado)
         supabase.auth.getSession().then(({ data }) => {
           if (data.session) handleSession(data.session);
         });
