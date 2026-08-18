@@ -26,13 +26,14 @@ export async function signIn(formData: FormData, cookies: any) {
   return { data, error };
 }
 
-// 2. Modificamos signUp para registrar usuario y guardar metadatos
+// 2. Modificamos signUp para registrar usuario y detectar correos duplicados
 export async function signUp(
   email: string,
   password: string,
   metadata?: { first_name?: string; last_name?: string; nationality?: string },
-  cookies?: any
+  cookies?: any // Agregamos el parámetro cookies aquí
 ) {
+  // 1. Declaramos data y error en el alcance principal de la función
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -45,23 +46,26 @@ export async function signUp(
     },
   });
 
+  // 2. Manejo de errores devueltos por Supabase
   if (error) {
+    if (error.message.includes('already registered') || error.status === 422) {
+      return { error: { message: 'Diese E-Mail-Adresse wird bereits verwendet. Bitte logge dich ein.' } };
+    }
     return { error };
   }
 
-  // 🛑 AQUÍ BORRAMOS LA INSERCIÓN MANUAL A 'profiles'
-  // El Trigger de SQL (handle_new_user) hará esto automáticamente en la base de datos.
-
-  const user = data.user;
-
-  if (user) {
-    // Si Supabase devuelve sesión tras el registro (ej: cuando la confirmación de email está apagada), la guardamos
-    if (data.session && cookies) {
-      cookies.set('sb-access-token', data.session.access_token, { path: '/' });
-      cookies.set('sb-refresh-token', data.session.refresh_token, { path: '/' });
-    }
+  // 3. Detección de correos duplicados oculta (identities vacío)
+  if (data?.user?.identities && data.user.identities.length === 0) {
+    return { error: { message: 'Diese E-Mail-Adresse wird bereits verwendet. Bitte logge dich ein.' } };
   }
 
+  // 4. Si Supabase devuelve sesión tras el registro (ej: cuando la confirmación de email está apagada), la guardamos
+  if (data?.session && cookies) {
+    cookies.set('sb-access-token', data.session.access_token, { path: '/' });
+    cookies.set('sb-refresh-token', data.session.refresh_token, { path: '/' });
+  }
+
+  // Si todo salió bien, devolvemos null en el error
   return { error: null };
 }
 

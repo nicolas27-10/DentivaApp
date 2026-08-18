@@ -61,5 +61,27 @@ import '../styles/global.css';
         }
       });
     </script>
+
+    <!-- Script de Seguridad para el Dashboard -->
+    <script>
+      import { supabase } from '../lib/supabaseClient';
+
+      function setupDashboardSecurity() {
+        supabase.auth.onAuthStateChange((event) => {
+          // Si el usuario hace clic en "Cerrar sesión"
+          if (event === 'SIGNED_OUT') {
+            // Borramos las cookies
+            document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            
+            // Lo redirigimos al login
+            window.location.replace('/login');
+          }
+        });
+      }
+
+      document.addEventListener('astro:page-load', setupDashboardSecurity);
+      setupDashboardSecurity();
+    </script>
   </body>
 </html>

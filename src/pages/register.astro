@@ -67,12 +67,25 @@ if (Astro.request.method === 'POST') {
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
       </div>
       <h2 class="text-2xl font-bold text-textMain mb-2">Fast geschafft!</h2>
-      <p class="text-textMain/70 mb-8 max-w-sm mx-auto">
+      <p class="text-textMain/70 mb-4 max-w-sm mx-auto">
         Wir haben Ihnen eine Bestätigungs-E-Mail gesendet. Bitte klicken Sie auf den Link in der E-Mail, um Ihre Registrierung abzuschließen.
       </p>
-      {/* <a href="/login" class="inline-block w-full py-3 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors">
-        Zum Login
-      </a> */}
+
+      <!-- AVISO DE CARPETA SPAM -->
+      <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 text-left">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p class="font-bold mb-1">E-Mail nicht erhalten?</p>
+            <p class="text-blue-700/90">
+              Bitte überprüfe auch deinen Spam-Ordner. Da Dentiva eine neue Plattform ist, landen unsere ersten E-Mails manchmal dort.
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
   ) : (
     <!-- VISTA DEL FORMULARIO (Se muestra solo si NO hubo éxito) -->
@@ -142,27 +155,42 @@ if (Astro.request.method === 'POST') {
 
         <button type="submit" class="w-full py-3 px-4 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-colors">Registrieren</button>
       </form>
+
+      <!-- ENLACE AL LOGIN RECUPERADO -->
+      <p class="mt-4 text-sm text-center text-textMain/70">
+        Hast du bereits ein Konto? <a href="/login" class="text-primary hover:underline">Hier einloggen</a>
+      </p>
+
     </div>
   )}
 
 </AuthLayout>
 
 <script>
-  // Tu script de togglePassword se mantiene aquí...
-  function setupAuthScripts() {
-    const toggleButtons = document.querySelectorAll<HTMLButtonElement>('.toggle-password');
-    toggleButtons.forEach(btn => {
-      const newBtn = btn.cloneNode(true) as HTMLButtonElement;
-      btn.replaceWith(newBtn);
-      newBtn.addEventListener('click', (e: MouseEvent) => {
+  function setupPasswordToggle() {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    
+    toggleButtons.forEach((element) => {
+      // Le decimos a TypeScript que esto es específicamente un botón
+      const btn = element as HTMLButtonElement;
+      
+      btn.onclick = (e) => {
         e.preventDefault();
-        const input = document.getElementById(newBtn.getAttribute('data-target')!) as HTMLInputElement;
+        
+        const targetId = btn.getAttribute('data-target');
+        if (!targetId) return;
+        
+        // Le decimos a TypeScript que esto es específicamente un input
+        const input = document.getElementById(targetId) as HTMLInputElement;
+        
         if (input) {
           input.type = input.type === 'password' ? 'text' : 'password';
-          newBtn.style.color = input.type === 'text' ? '#4AAED9' : '';
+          btn.style.color = input.type === 'text' ? '#4AAED9' : '';
         }
-      });
+      };
     });
   }
-  document.addEventListener('astro:page-load', setupAuthScripts);
+
+  document.addEventListener('astro:page-load', setupPasswordToggle);
+  setupPasswordToggle();
 </script>
