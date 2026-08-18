@@ -2,6 +2,7 @@
 import AuthLayout from '../layouts/AuthLayout.astro';
 import { signUp } from '../lib/auth';
 import { getSession } from "../lib/auth";
+import NationalitySelect from '../components/NationalitySelect.astro';
 
 const session = await getSession(Astro.cookies);
 
@@ -116,31 +117,10 @@ if (Astro.request.method === 'POST') {
         </div>
 
         <div>
-          <label for="nationality" class="block text-sm font-medium text-textMain/80 mb-1">Nationalität</label>
-          <select id="nationality" name="nationality" required class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain appearance-none">
-            <option value="" disabled selected>Bitte wählen...</option>
-            <option value="Argentinien">🇦🇷 Argentinien</option>
-            <option value="Bolivien">🇧🇴 Bolivien</option>
-            <option value="Chile">🇨🇱 Chile</option>
-            <option value="Deutschland">🇩🇪 Deutschland</option>
-            <option value="Ecuador">🇪🇨 Ecuador</option>
-            <option value="Frankreich">🇫🇷 Frankreich</option>
-            <option value="Griechenland">🇬🇷 Griechenland</option>
-            <option value="Italien">🇮🇹 Italien</option>
-            <option value="Kolumbien">🇨🇴 Kolumbien</option>
-            <option value="Mexiko">🇲🇽 Mexiko</option>
-            <option value="Österreich">🇦🇹 Österreich</option>
-            <option value="Peru">🇵🇪 Peru</option>
-            <option value="Polen">🇵🇱 Polen</option>
-            <option value="Portugal">🇵🇹 Portugal</option>
-            <option value="Rumänien">🇷🇴 Rumänien</option>
-            <option value="Schweiz">🇨🇭 Schweiz</option>
-            <option value="Spanien">🇪🇸 Spanien</option>
-            <option value="Türkei">🇹🇷 Türkei</option>
-            <option value="Ukraine">🇺🇦 Ukraine</option>
-            <option value="Venezuela">🇻🇪 Venezuela</option>
-            <option value="Andere">🌍 Andere</option>
-          </select>
+          <label for="nationality" class="block text-sm font-medium text-textMain/80 mb-1">
+            Nationalität
+          </label>
+          <NationalitySelect />
         </div>
 
         <div>

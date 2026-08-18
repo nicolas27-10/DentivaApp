@@ -1,0 +1,72 @@
+---
+interface Props {
+  id?: string;
+  name?: string;
+  required?: boolean;
+  class?: string;
+  value?: string;
+}
+
+const {
+  id = "nationality",
+  name = "nationality",
+  required = true,
+  class: className = "",
+  value = "",
+} = Astro.props;
+
+const countries = [
+  { value: "Ägypten", label: "🇪🇬 Ägypten" },
+  { value: "Algerien", label: "🇩🇿 Algerien" },
+  { value: "Argentinien", label: "🇦🇷 Argentinien" },
+  { value: "Bolivien", label: "🇧🇴 Bolivien" },
+  { value: "Chile", label: "🇨🇱 Chile" },
+  { value: "Deutschland", label: "🇩🇪 Deutschland" },
+  { value: "Ecuador", label: "🇪🇨 Ecuador" },
+  { value: "Frankreich", label: "🇫🇷 Frankreich" },
+  { value: "Griechenland", label: "🇬🇷 Griechenland" },
+  { value: "Irak", label: "🇮🇶 Irak" },
+  { value: "Iran", label: "🇮🇷 Iran" },
+  { value: "Italien", label: "🇮🇹 Italien" },
+  { value: "Jemen", label: "🇾🇪 Jemen" },
+  { value: "Jordanien", label: "🇯🇴 Jordanien" },
+  { value: "Kolumbien", label: "🇨🇴 Kolumbien" },
+  { value: "Libanon", label: "🇱🇧 Libanon" },
+  { value: "Libyen", label: "🇱🇾 Libyen" },
+  { value: "Marokko", label: "🇲🇦 Marokko" },
+  { value: "Mexiko", label: "🇲🇽 Mexiko" },
+  { value: "Österreich", label: "🇦🇹 Österreich" },
+  { value: "Palästina", label: "🇵🇸 Palästina" },
+  { value: "Peru", label: "🇵🇪 Peru" },
+  { value: "Polen", label: "🇵🇱 Polen" },
+  { value: "Portugal", label: "🇵🇹 Portugal" },
+  { value: "Rumänien", label: "🇷🇴 Rumänien" },
+  { value: "Saudi-Arabien", label: "🇸🇦 Saudi-Arabien" },
+  { value: "Schweiz", label: "🇨🇭 Schweiz" },
+  { value: "Spanien", label: "🇪🇸 Spanien" },
+  { value: "Sudan", label: "🇸🇩 Sudan" },
+  { value: "Syrien", label: "🇸🇾 Syrien" },
+  { value: "Tunesien", label: "🇹🇳 Tunesien" },
+  { value: "Türkei", label: "🇹🇷 Türkei" },
+  { value: "Ukraine", label: "🇺🇦 Ukraine" },
+  { value: "VAE", label: "🇦🇪 Ver. Arab. Emirate" },
+  { value: "Venezuela", label: "🇻🇪 Venezuela" },
+  { value: "Andere", label: "🌍 Andere" },
+];
+---
+
+<select
+  id={id}
+  name={name}
+  required={required}
+  class={`w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-card text-textMain appearance-none ${className}`}
+>
+  <option value="" disabled selected={!value}>Bitte wählen...</option>
+  {
+    countries.map((country) => (
+      <option value={country.value} selected={value === country.value}>
+        {country.label}
+      </option>
+    ))
+  }
+</select>
