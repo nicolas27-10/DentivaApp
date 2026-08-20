@@ -6,6 +6,7 @@ import { getModulesWithProgress } from "@/lib/modules";
 import { supabase } from "@/lib/supabaseClient";
 import GeneralProgress from "../components/GeneralProgress";
 import DashboardTrainingSection from "@/components/DashboardTrainingSection";
+import UpdateModal from "@/components/UpdateModal";
 
 if (Astro.request.method === "POST") {
   Astro.cookies.delete("sb-access-token", { path: "/" });
@@ -223,6 +224,7 @@ const fspPercentage = Math.min(
       Wöchentliches Ranking
     </h2>
     <LeaderboardTable />
+    <UpdateModal client:only="react"/>
   </section>
 
   {/* --- SCRIPT GLOBAL DE PROGRESO EN DASHBOARD (MODO DEBUG) --- */}
