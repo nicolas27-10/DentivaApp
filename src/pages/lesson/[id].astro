@@ -14,6 +14,15 @@ if (!user) {
   return Astro.redirect('/login');
 }
 
+// 1. Obtener estado premium
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("is_premium")
+  .eq("id", user.id)
+  .single();
+
+const isPremium = profile?.is_premium ?? false;
+
 const userId = user.id;
 
 // 🔑 EXTRAER EL TOKEN
@@ -119,6 +128,7 @@ if (exerciseIds.length > 0) {
           lessonId={Number(id)} 
           moduleId={lesson.module_id}
           isCompleted={isCompleted} 
+          isPremium={isPremium}
         />
       ) : (
         <p class="text-gray-500 text-center py-8">Für diese Lektion gibt es noch keine Übungen.</p>

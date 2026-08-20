@@ -19,10 +19,18 @@ interface QuizProps {
   userId: string;
   lessonId: string | number;
   moduleId: string | number;
-  isCompleted?: boolean; // 👈 1. Añadimos la propiedad
+  isCompleted?: boolean;
+  isPremium?: boolean; // 👈 1. Añadido para controlar el offset del sticky navbar
 }
 
-export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, isCompleted = false }: QuizProps) {
+export default function VerticalQuiz({ 
+  exercises, 
+  userId, 
+  lessonId, 
+  moduleId, 
+  isCompleted = false,
+  isPremium = false // 👈 Valor por defecto
+}: QuizProps) {
   const [shuffledExercises, setShuffledExercises] = useState<Exercise[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,19 +52,16 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
     return {};
   });
 
-  // 🔒 BLOQUEO DE SCROLL PROFESIONAL
-  // Este efecto vigila 'isSaving'. Si es true, congela el scroll.
+  // 🔒 Bloqueo de scroll cuando se está guardando
   useEffect(() => {
     if (isSaving) {
       document.body.style.overflow = 'hidden';
-      // Opcional: añade un padding-right para evitar que la página "salte" al desaparecer la scrollbar
       document.body.style.paddingRight = 'var(--scrollbar-width, 0px)'; 
     } else {
       document.body.style.overflow = 'auto';
       document.body.style.paddingRight = '0px';
     }
 
-    // Limpieza (Cleanup): Si el usuario cierra la pestaña o navega, devolvemos el scroll
     return () => {
       document.body.style.overflow = 'auto';
       document.body.style.paddingRight = '0px';
@@ -66,9 +71,10 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
   useEffect(() => {
     const randomized = exercises.map(exercise => {
       if (exercise.type === 'flashcard') return exercise; 
+      const currentOptions = Array.isArray(exercise.exercise_options) ? exercise.exercise_options : [];
       return {
         ...exercise,
-        exercise_options: [...exercise.exercise_options].sort(() => Math.random() - 0.5)
+        exercise_options: [...currentOptions].sort(() => Math.random() - 0.5)
       };
     });
     setShuffledExercises(randomized);
@@ -82,7 +88,7 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
   }, [answers, storageKey]);
 
   const handleOptionClick = (exerciseId: number, optionId: number) => {
-    if (answers[exerciseId]) return;
+    if (answers[exerciseId] !== undefined) return;
     setAnswers((prev) => ({ ...prev, [exerciseId]: optionId }));
   };
 
@@ -116,22 +122,15 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
 
   if (!isMounted) return null;
 
-  // 1. El progreso se basa en TODOS los ejercicios válidos que llegan al componente
   const gradableExercises = shuffledExercises;
-  
-  // 2. El total a completar se basa en esos ejercicios
   const totalQuestions = gradableExercises.length;
-  
-  // 3. Contamos cuántas preguntas han sido respondidas
   const answeredCount = gradableExercises.filter(ex => answers[ex.id] !== undefined).length;
-  
-  // 4. Calculamos el porcentaje
   const progressPercentage = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
-  
+
   return (
     <div className="mx-auto pb-24 relative min-h-[400px]">
       
-      {/* 🌀 PANTALLA DE CARGA (Fixed + Blur + No Scroll) */}
+      {/* 🌀 PANTALLA DE CARGA */}
       {isSaving && (
         <div className="fixed inset-0 bg-white/70 backdrop-blur-md z-50 flex flex-col items-center justify-center pointer-events-auto">
           <div className="relative w-16 h-16 mb-4">
@@ -144,7 +143,7 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
         </div>
       )}
 
-      {/* 🟢 2. BANNER DE MODO PRÁCTICA (Aparece si ya tiene 100%) */}
+      {/* 🟢 BANNER DE MODO PRÁCTICA */}
       {isCompleted && (
         <div className="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-xl flex items-start gap-4 shadow-sm z-10 relative">
           <span className="text-2xl">✅</span>
@@ -155,8 +154,10 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
         </div>
       )}
 
-      {/* Barra de progreso */}
-      <div className="sticky top-16 z-20 bg-white/90 backdrop-blur-md p-4 border-b border-gray-100 shadow-sm mb-6 rounded-b-2xl">
+      {/* Barra de progreso sticky adaptada según isPremium */}
+      <div 
+        className={`sticky ${isPremium ? 'top-16' : 'top-[7rem]'} z-20 bg-white/90 backdrop-blur-md p-4 border-b border-gray-100 shadow-sm mb-6 rounded-b-2xl transition-[top] duration-200`}
+      >
         <div className="flex justify-between items-center text-sm font-bold text-gray-500 mb-2">
           <span>Unterrichtsfortschritt</span>
           <span className="text-primary">{answeredCount} / {totalQuestions} ({progressPercentage}%)</span>
@@ -188,7 +189,12 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
                       else buttonColor = "bg-gray-50 border-gray-100 text-gray-400 opacity-50";
                     }
                     return (
-                      <button key={option.id} onClick={() => handleOptionClick(exercise.id, option.id)} disabled={isAnswered} className={`w-full text-left p-4 rounded-lg border-2 transition-all font-medium ${buttonColor}`}>
+                      <button 
+                        key={option.id} 
+                        onClick={() => handleOptionClick(exercise.id, option.id)} 
+                        disabled={isAnswered} 
+                        className={`w-full text-left p-4 rounded-lg border-2 transition-all font-medium ${buttonColor}`}
+                      >
                         {option.option_text}
                       </button>
                     );
@@ -197,7 +203,12 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
               )}
 
               {exercise.type === 'flashcard' && !isAnswered && (
-                <button onClick={() => handleFlashcardComplete(exercise.id)} className="w-full bg-indigo-50 text-indigo-700 font-bold py-3 rounded-lg border-2 border-indigo-200">Karte umdrehen / Verstanden</button>
+                <button 
+                  onClick={() => handleFlashcardComplete(exercise.id)} 
+                  className="w-full bg-indigo-50 text-indigo-700 font-bold py-3 rounded-lg border-2 border-indigo-200"
+                >
+                  Karte umdrehen / Verstanden
+                </button>
               )}
 
               {isAnswered && exercise.explanation && (
@@ -214,7 +225,7 @@ export default function VerticalQuiz({ exercises, userId, lessonId, moduleId, is
             <button
               onClick={handleFinishLesson}
               disabled={isSaving}
-              className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg flex justify-center items-center disabled:opacity-70"
+              className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg flex justify-center items-center disabled:opacity-70 transition-opacity"
             >
               {isSaving ? "Fortschritt wird gespeichert…" : " Lektion abschließen 🚀"}
             </button>
