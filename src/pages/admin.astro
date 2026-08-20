@@ -28,9 +28,10 @@ if (error) {
   console.error('Error al cargar métricas de administración:', error);
 }
 
-// Variables desglosadas con valores por defecto
+// Variables desglosadas
 const totalUsers = metrics?.total_users ?? 0;
 const newUsersWeek = metrics?.registered_last_7_days ?? 0;
+const activeUsersToday = metrics?.active_users_today ?? 0;
 const premiumUsers = metrics?.total_premium_users ?? 0;
 const usersWithAttempts = metrics?.users_with_attempts ?? 0;
 const usersWithProgress = metrics?.users_with_progress ?? 0;
@@ -53,39 +54,52 @@ const paidConversionRate = totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold text-textMain">Panel de Control (Admin)</h1>
-        <p class="text-textMain/70 text-sm mt-1">Métricas de adopción, interacción y conversión de usuarios.</p>
+        <p class="text-textMain/70 text-sm mt-1">Métricas de adopción, interacción en vivo y conversión de usuarios.</p>
       </div>
       <span class="px-3 py-1 bg-accent/10 text-accent font-semibold text-xs rounded-full border border-accent/20">
         Admin Privado
       </span>
     </div>
 
-    <!-- KPIs Rápidos -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- KPIs Rápidos (Grid de 5 métricas principales) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <!-- Activos Hoy (DAU) -->
+      <div class="bg-card border border-emerald-500/30 p-5 rounded-2xl shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Activos Hoy</p>
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </div>
+        <p class="text-3xl font-bold text-emerald-600 mt-2">{activeUsersToday}</p>
+      </div>
+
       <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
         <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">Total Registrados</p>
         <p class="text-3xl font-bold text-textMain mt-2">{totalUsers}</p>
       </div>
 
       <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
-        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">Nuevos (Últimos 7 días)</p>
+        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">Nuevos (7 días)</p>
         <p class="text-3xl font-bold text-primary mt-2">+{newUsersWeek}</p>
       </div>
 
-      <!-- KPI Premium Destacado -->
+      <!-- KPI Premium -->
       <div class="bg-card border border-primary/30 p-5 rounded-2xl shadow-sm relative overflow-hidden">
         <div class="flex justify-between items-start">
-          <p class="text-xs font-medium text-primary uppercase tracking-wider">Usuarios Premium</p>
-          <span class="text-xs px-2 py-0.5 bg-primary/10 text-primary font-semibold rounded">
-            {paidConversionRate}% conv.
+          <p class="text-xs font-medium text-primary uppercase tracking-wider">Premium</p>
+          <span class="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary font-semibold rounded">
+            {paidConversionRate}%
           </span>
         </div>
         <p class="text-3xl font-bold text-primary mt-2">{premiumUsers}</p>
       </div>
 
       <div class="bg-card border border-border p-5 rounded-2xl shadow-sm">
-        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">% Activación (Free)</p>
-        <p class="text-3xl font-bold text-success mt-2">{activationRate}%</p>
+        <p class="text-xs font-medium text-textMain/60 uppercase tracking-wider">% Activación</p>
+        <p class="text-3xl font-bold text-accent mt-2">{activationRate}%</p>
       </div>
     </div>
 
