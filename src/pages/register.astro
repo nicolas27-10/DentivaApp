@@ -180,7 +180,7 @@ if (Astro.request.method === 'POST') {
     button.style.color = isPassword ? '#4AAED9' : '';
   }
 
-  // Intercepta la pulsación táctil o clic de mouse antes de que el navegador aplique su menú nativo
+  // Captura el toque en móvil o clic en desktop antes de cualquier menú nativo
   document.addEventListener('pointerdown', (e) => {
     const target = e.target as HTMLElement | null;
     const btn = target?.closest('.toggle-password') as HTMLButtonElement | null;
